@@ -17,9 +17,10 @@ Bekerman (eb3516), Lucia Wang (lw3061), Nandini Mutyala (nm3403)
 # Motivation
 
 NYC appointed a Rat Czar in 2023 in response to increased complaints of
-rats over the last two years (Source: NPR) - we would like to
-preliminarily analyze trends before and after the beginning of the
-Czar’s reign
+rats over the last two years (Source:
+[NPR](https://www.npr.org/2023/04/13/1169851616/new-york-city-appointed-a-rat-czar-her-job-will-be-a-tall-ask)) -
+we would like to preliminarily analyze trends before and after the
+beginning of the Czar’s reign
 
 # Intended Final Product
 
@@ -27,21 +28,27 @@ A website
 
 # Anticipated Data Sources
 
-1.  NYC Open Data
+1.  [NYC Open
+    Data](https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j)
 
-2.  Restaurant inspections data
+2.  [Restaurant inspections
+    data](https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j)
 
-3.  Homes with reported signs of mice data
+3.  [Homes with reported signs of mice
+    data](https://a816-dohbesp.nyc.gov/IndicatorPublic/beta/data-explorer/mice-and-rats/?id=2394#display=summary)
 
-4.  Rodent inspections data
+4.  [Rodent inspections
+    data](https://data.cityofnewyork.us/Health/Rodent-Inspection/p937-wjvj)
 
-5.  Rat sightings data
+5.  [Rat sightings
+    data](https://data.cityofnewyork.us/Social-Services/Rat-Sightings/3q43-55fe)
 
 - Intended time period: between 1/1/16 - 11/1/23 in all 5 boroughs
 
-6.  TransitApp Rats data - <https://transitapp.com/rats>
+6.  [TransitApp Rats data](https://transitapp.com/rats)
 
-7.  Rent hop average rental price by zipcode
+7.  [Rent hop average rental price by
+    zipcode](https://www.renthop.com/average-rent-in/new-york-ny)
 
 # Planned Analyses / Visualizations / Coding challenges
 
@@ -63,7 +70,7 @@ A website
 
 # Planned Timeline
 
-Sometime Nov 11-Nov 15: Meet w TA for project review meeting
+Sometime Nov 11-Nov 15: Meet w/TA for project review meeting
 
 Nov 16-23: First pass of analyses
 
