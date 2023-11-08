@@ -1,0 +1,74 @@
+Project Proposal
+================
+Entire Team
+2023-11-08
+
+## Final Project Proposal
+
+# Group Members
+
+Austin Hsin (ah4028), Juliet Rowe (jer2243), Nancy Le (nl2835), Liz
+Bekerman (eb3516), Lucia Wang (lw3061), Nandini Mutyala (nm3403)
+
+# Tentative Project Title
+
+“Do Rats Run This City?”
+
+# Motivation
+
+NYC appointed a Rat Czar in 2023 in response to increased complaints of
+rats over the last two years (Source: NPR) - we would like to
+preliminarily analyze trends before and after the beginning of the
+Czar’s reign
+
+# Intended Final Product
+
+A website
+
+# Anticipated Data Sources
+
+1.  NYC Open Data
+
+2.  Restaurant inspections data
+
+3.  Homes with reported signs of mice data
+
+4.  Rodent inspections data
+
+5.  Rat sightings data
+
+- Intended time period: between 1/1/16 - 11/1/23 in all 5 boroughs
+
+6.  TransitApp Rats data - <https://transitapp.com/rats>
+
+7.  Rent hop average rental price by zipcode
+
+# Planned Analyses / Visualizations / Coding challenges
+
+1.  Data analysis pre- and post- Rat Czar appointment to evaluate
+    whether the Rat Czar appointment has yet proven to be effective
+
+2.  Analysis of rat infestation volume over time
+
+3.  Mapping trash v rat density
+
+4.  Mapping density of poor restaurant inspection scores v rat density
+
+5.  Look at changes during covid when lots of people fled the city
+
+6.  Rodent-transmitted infectious disease prevalence by rat population
+    numbers
+
+7.  Correlation between number of rat sightings and rental price
+
+# Planned Timeline
+
+Sometime Nov 11-Nov 15: Meet w TA for project review meeting
+
+Nov 16-23: First pass of analyses
+
+Nov 23-26: Thanksgiving break
+
+November 27-Dec 4: Continue and finalize analyses
+
+Dec 4-Dec 9: Write and finalize report; submit
