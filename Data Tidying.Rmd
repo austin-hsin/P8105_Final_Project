@@ -1,0 +1,25 @@
+---
+title: "Data Tidying"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(plotly)
+```
+
+```{r}
+sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
+  janitor::clean_names() |>
+  separate(created_date, into=c("month","e", "day","f", "year", "time"), sep=c(2,3,5,6,11)) |>
+  select(-e,-f) |>
+  mutate(year = as.numeric(year),
+         month = as.numeric(month),
+         day = as.numeric(day)) |>
+  filter(year >= 2016,
+         !borough %in% c("Unspecified", NA))
+
+sightings |> group_by(year, borough) |> summarize(count=n()) |> plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line")
+```
+after 2020, the count of rat sightings increased DRAMATICALLY across all boroughs (except Staten Island). perhaps we could test the slopes to see if there is a linear association 
