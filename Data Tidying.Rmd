@@ -9,6 +9,7 @@ library(tidyverse)
 library(plotly)
 ```
 
+# Rat Sightings
 ```{r}
 sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
   janitor::clean_names() |>
@@ -23,3 +24,12 @@ sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
 sightings |> group_by(year, borough) |> summarize(count=n()) |> plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line")
 ```
 after 2020, the count of rat sightings increased DRAMATICALLY across all boroughs (except Staten Island). perhaps we could test the slopes to see if there is a linear association 
+
+# NYC Restaurant Inspections
+```{r inspections}
+inspections = read_csv('data/NYC_Restaurant_Inspections.csv') |>
+  janitor::clean_names()
+  
+```
+
+Cleaning and organizing NYC Restaurant Inspections by violation 04K - evidence of rats
