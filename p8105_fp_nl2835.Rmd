@@ -1,0 +1,159 @@
+---
+title: "p8105_fp_nl2835"
+author: "Nancy Le"
+date: '`r format(Sys.time(), "%Y-%m-%d")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
+
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+
+library(dplyr)
+library(plotly)
+```
+Looking into rat sighting v waste data
+
+```{r load and clean waste data}
+waste <-
+  read.csv("DSNY_Monthly_Tonnage_Data_20231202.csv") |> 
+  janitor::clean_names() |> 
+  separate(month, into = c("year", "month"), sep = " / ") |>
+  group_by(year, month, borough) |>
+  filter(year >= 2016 & year < 2024 ) |>
+  summarize(
+    total_refuse = sum(refusetonscollected, na.rm = TRUE),
+    total_paper = sum(papertonscollected, na.rm = TRUE),
+    total_mgp = sum(mgptonscollected, na.rm = TRUE))  |> 
+  mutate_all(tolower) |> 
+  mutate(across(where(is.character), trimws)) 
+```
+
+```{r waste data - pivoted longer}
+waste_2 = waste |> 
+   pivot_longer(
+    total_refuse:total_mgp, 
+    names_to = "type",
+    values_to = "tons") |> 
+  mutate(type = substr(type, 7, 12),
+         tons = as.numeric(tons)) |> 
+  group_by(year, month, borough, type, tons) 
+
+```
+
+
+```{r clean sightings data}
+sightings <-
+  read_csv('NYC_Rat_Sightings.csv') |> 
+  janitor::clean_names() |> 
+  separate(created_date, into=c("month","e", "day","f", "year", "g", "time"), sep=c(2,3,5,6,10,11)) |> 
+  select(-e,-f,-g) |> 
+  mutate(date = paste(year, month, day, sep=""), 
+         date = as.numeric(date)) |>  
+  filter(date <= 20231031, date >= 20160101, !incident_zip <= 10000, !incident_zip >11697, !borough %in% c("Unspecified", NA)) |> 
+  select(
+    -agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |>
+  select(unique_key, date, year, month, day, everything()) |> 
+  mutate_all(tolower) |>
+  mutate(across(where(is.character), trimws)) |> 
+  group_by(year, month, borough) |> 
+  summarize(ratcount = n()) 
+```
+
+
+
+```{r merge datasets}
+merged = inner_join(waste_2, sightings, 
+            by = c("year", "month", "borough")) |> 
+  mutate(tons = as.numeric(tons)) |> 
+  mutate(
+    combined_ym = paste(year, month, sep = "-"),
+    combined_ym = ym(combined_ym)) 
+
+merged_tons = merged |> 
+  group_by(year, month, borough, ratcount) |> 
+  summarize(total_tons = (sum(tons)))  |> 
+  mutate(
+    combined_ym = paste(year, month, sep = "-"),
+    combined_ym = ym(combined_ym) )
+```
+
+
+
+visualization
+```{r total rat count over time by borough and year}
+ggplot(merged, aes(x=month, y = ratcount, color = borough, group = interaction(year, borough))) + 
+    geom_line() + 
+    labs(title = "Total Rat Count by Borough",
+         x = "Month",
+         y = "Rat Count",
+         caption = "Data from NYC Open Data") +
+  facet_wrap(year ~ . ) 
+
+```
+
+
+
+
+```{r total tons over time by borough - one graph across all time}
+ggplot(merged_tons, aes(x=combined_ym, y = total_tons, color = borough, group = interaction(year, borough))) + 
+    geom_line() + 
+    labs(title = "Total Tons of Trash by Borough",
+         x = "Date",
+         y = "Total Tons",
+         caption = "Data from DSNY Monthly Tonnage Data") 
+```
+
+
+
+```{r plot type of waste vs. rat count}
+ggplot(merged, aes(x = ratcount, y = tons, color = type)) +
+  geom_point(size = 2, alpha = .6) +
+  ylim(0, 85000) + 
+  labs(title = "Tons of Trash by Rat Count and Trash Type",
+       x = "Rat Count", 
+       y = "Total Tons",
+       color = "Type of Waste",
+       caption = "Data from NYC Open Data and DSNY Monthly Tonnage Data")  
+```
+
+
+
+```{r plotly trash by neighborhood}
+merged_tons |>
+  mutate(text_label = str_c("Tons of Trash: ", total_tons, "\nNumber of Rats: ", ratcount)) |> 
+  plot_ly(
+    x = ~ratcount, y = ~total_tons, type = "scatter", mode = "markers",
+    color = ~borough, text = ~text_label, alpha = 0.5)
+```
+
+```{r plotly rats by neighborhood}
+merged_tons |>
+  mutate(text_label = str_c("Number of Rats: ", ratcount, "\nTons of Trash: ", total_tons)) |> 
+  plot_ly(
+    y = ~ratcount, x = ~total_tons, type = "scatter", mode = "markers",
+    color = ~borough, text = ~text_label, alpha = 0.5)
+```
+
+
