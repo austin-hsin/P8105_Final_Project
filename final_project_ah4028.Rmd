@@ -1,0 +1,67 @@
+---
+title: "Final_Project_ah4028.rmd"
+author: "Austin Hsin"
+date: "2023-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# NYC Restaurant Inspections
+
+Cleaning and organizing NYC Restaurant Inspections by violation 04K - evidence of rats
+
+```{r inspections_df}
+#Importing NYC Restaurant Inspections csv
+inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
+  janitor::clean_names() |>
+  separate(inspection_date, c("Month", "Day", "Year"), sep = "/") |>
+  select(-Day) |> #can remove other columns as needed
+  filter(as.numeric(Year) > 2015)
+```
+
+Plotting 04K violations
+
+```{r violation plot}
+#Observations of violations
+violations_plot_df <- inspections_df |>
+  group_by(Year, boro, violation_code) |>
+  mutate(code_obs = n())
+
+#Plotting 04K violations by coordinates
+violations_plot_df |>
+  filter(latitude > 0) |>
+  filter(violation_code == "04K") |>
+  ggplot(aes(x = longitude, y = latitude, color = boro)) +
+  geom_point(alpha = 0.5) +
+  coord_cartesian()
+
+#Plotting 04K violations by year and boro
+violations_plot_df |>
+  filter(violation_code == "04K") |>
+  ggplot(aes(x = as.numeric(Year), y = code_obs, color = boro)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(
+    breaks = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023), 
+    labels = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023))
+
+#Plotting 04K violations to other 04 violations
+violations_plot_df |>
+  filter(violation_code %in% c("04K","04M","04L", "04O")) |>
+  ggplot(aes(x = violation_code), color = violation_code) +
+  geom_bar()
+
+#Plotting 04K violations by cuisine type
+violations_plot_df |>
+  filter(violation_code == "04K") |>
+  group_by(cuisine_description) |>
+  mutate(cuisine_obs = n()) |>
+  filter(cuisine_obs > 25) |>
+  ggplot(aes(x = cuisine_description, y = cuisine_obs)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+```
