@@ -7,9 +7,27 @@ output:
 ---
 
 The members of this project include:
-Lucia Wang, lw3061
-Austin Hsin, ah4028
-Juliet Rowe, jer2243
-Elizabeth Bekerman, eb3516
-Nancy Le, nl2835
-Nandini Mutyala, nm3403
+
+* <img src="pics/lucia.png" width="50"> Lucia Wang (lw3061)
+  + Department: Epidemiology
+  + Certificate: Infectious Disease Epidemiology
+
+* <img src="pics/austin.png" width="50"> Austin Hsin (ah4028)
+  + Department: Epidemiology
+  + Certificate: Chronic Disease Epidemiology
+
+* <img src="pics/juliet.png" width="50"> Juliet Rowe (jer2243)
+  + Department: Epidemiology
+  + Certificate: Applied Biostatistics
+
+* <img src="pics/liz.png" width="50">Elizabeth (Liz) Bekerman (eb3516)
+  + Department: Health Policy and Management
+  + Certificate: Applied Biostatistics
+
+* <img src="pics/nancy.png" width="50">Nancy Le (nl2835)
+  + Department: Health Policy and Management
+  + Certificate: ?? (sorry nancy please update)
+
+* <img src="pics/nandini.png" width="50">Nandini Mutyala (nm3403)
+  + Department: Epidemiology
+  + Certificate: Infectious Disease Epidemiology
