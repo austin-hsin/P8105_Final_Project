@@ -25,7 +25,7 @@ As we tided and joined data, we realized the Rat Czar is so new that there isn't
 * How are sociodemographic factors, weather conditions, trash density, and restaurant inspections related to rat sightings?
 * What does the Rat Czar need to focus on to win the war against rats?
 
-## [Data](data-sources.html)
+## [Data](data_sources.html)
 
 Data was taken majorly from [NYC Open Data](https://opendata.cityofnewyork.us/), [Census data](https://www.census.gov/data.html), and [NOAA](https://www.ncei.noaa.gov/cdo-web/datasets).
 
@@ -52,6 +52,7 @@ As stated earlier, the questions we had for our project evolved as we worked to 
 
 
 ## [Additional analysis](statistical.html)
+
 ```{r}
 # not sure if we did any tbh, but could put the two linear models of the rat sightings here, though the conclusion is very weak
 
