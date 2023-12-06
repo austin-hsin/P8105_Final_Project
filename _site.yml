@@ -18,6 +18,8 @@ navbar:
       menu:
         - text: "Exploratory Analysis"
           href: exploratory.html
+        - text: "Statistical Analysis"
+          href: statistical.html
     - icon: fa-github fa-lg
       href: https://github.com/austin-hsin/P8105_Final_Project
       
