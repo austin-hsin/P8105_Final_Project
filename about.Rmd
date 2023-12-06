@@ -6,4 +6,10 @@ output:
     toc_float: true
 ---
 
-This is where about us goes
+The members of this project include:
+Lucia Wang, lw3061
+Austin Hsin, ah4028
+Juliet Rowe, jer2243
+Elizabeth Bekerman, eb3516
+Nancy Le, nl2835
+Nandini Mutyala, nm3403
