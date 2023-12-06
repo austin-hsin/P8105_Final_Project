@@ -1,0 +1,962 @@
+---
+title: "Socioeconomic factors and Rat sightings"
+author: "Nandini M"
+output: html_document
+---
+
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(readxl)
+library(stringr)
+library(ggplot2)
+library(choroplethr)
+library(choroplethrMaps)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+Data Cleaning:
+----------------
+
+#### *Steps*
+
+1.    clean names and select necessary variables
+
+2.    rename the variables
+
+3.    drop any rows with missing observations
+
+4.    filter out the second row (contains comments about the columns)
+
+5.    join all the datasets
+
+6.    drop any rows with missing observations
+
+7.    create new column, id, using the geo id
+
+8.    filter to only keep counties relevant to NYC
+
+#### **Crowding data**
+
+Crowded households may promote an environment that promotes the nesting of rats due to increased garbage or unhygienic behaviors. There may be increased sightings of rats in these households because there are more people able to spot them.
+
+*   less_than_1   = Occupied housing units with 1.00 or less occupants per room
+*   bet_1to1.5    = Occupied housing units with 1.01 to 1.50 occupants per room
+*   more_than_1.5 = Occupied housing units with 1.51 or more occupants per room
+*   total_homes   = Estimate of Occupied housing units
+*   less_prop     = Proportion of occupied housing units with 1.00 or less occupants per room
+*   bet_prop      = Proportion of occupied housing units with 1.01 to 1.50 occupants per room
+*   more_prop     = Proportion of occupied housing units with 1.51 or more occupants per room
+
+```{r, message=FALSE}
+crowding18 =
+  read_csv("data/crowding/2018_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y18   = s2501_c01_006e,
+    bet_1to1.5_y18    = s2501_c01_007e,
+    more_than_1.5_y18 = s2501_c01_008e,
+    total_homes_y18   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y18","bet_1to1.5_y18","more_than_1.5_y18", "total_homes_y18"), as.numeric) |> 
+  mutate(
+    less_prop_y18  = less_than_1_y18/total_homes_y18,
+    bet_prop_y18  = bet_1to1.5_y18/total_homes_y18,
+    more_prop_y18 = more_than_1.5_y18/total_homes_y18,
+  )
+
+crowding19 =
+  read_csv("data/crowding/2019_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y19   = s2501_c01_006e,
+    bet_1to1.5_y19    = s2501_c01_007e,
+    more_than_1.5_y19 = s2501_c01_008e,
+    total_homes_y19   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y19","bet_1to1.5_y19","more_than_1.5_y19", "total_homes_y19"), as.numeric) |> 
+  mutate(
+    less_prop_y19  = less_than_1_y19/total_homes_y19,
+    bet_prop_y19  = bet_1to1.5_y19/total_homes_y19,
+    more_prop_y19 = more_than_1.5_y19/total_homes_y19,
+  )
+
+crowding20 =
+  read_csv("data/crowding/2020_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y20   = s2501_c01_006e,
+    bet_1to1.5_y20    = s2501_c01_007e,
+    more_than_1.5_y20 = s2501_c01_008e,
+    total_homes_y20   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y20","bet_1to1.5_y20","more_than_1.5_y20", "total_homes_y20"), as.numeric) |> 
+  mutate(
+    less_prop_y20  = less_than_1_y20/total_homes_y20,
+    bet_prop_y20  = bet_1to1.5_y20/total_homes_y20,
+    more_prop_y20 = more_than_1.5_y20/total_homes_y20,
+  )
+  
+crowding21 =
+  read_csv("data/crowding/2021_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y21   = s2501_c01_006e,
+    bet_1to1.5_y21    = s2501_c01_007e,
+    more_than_1.5_y21 = s2501_c01_008e,
+    total_homes_y21   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y21","bet_1to1.5_y21","more_than_1.5_y21", "total_homes_y21"), as.numeric) |> 
+  mutate(
+    less_prop_y21  = less_than_1_y21/total_homes_y21,
+    bet_prop_y21  = bet_1to1.5_y21/total_homes_y21,
+    more_prop_y21 = more_than_1.5_y21/total_homes_y21,
+  )
+
+crowding_10s = 
+  full_join(crowding18, crowding19, by = "geo_id")
+
+crowding_20s = 
+  full_join(crowding20, crowding21, by = "geo_id")
+
+crowding_all =
+  full_join(crowding_10s, crowding_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+#### **Education Level Data**
+
+Prior research in other cities has shown an association between low education and rat sightings. We hypothesized that individuals with lower education may be unable to access newly renovated, or well-maintained housing units. As a result, they may be more likely to come into contact with rats or live in areas that contains large numbers of the rat population.
+
+*   less_9        = Population 25 years and over - Less than 9th grade
+*   no_hs_diploma = Population 25 years and over - 9th to 12th grade, no diploma
+*   hs_grad       = Population 25 years and over - High school graduate (includes equivalency)
+*   some_college  = Population 25 years and over - Some college, no degree
+*   associate     = Population 25 years and over - Associate's degree
+*   bachelor      = Population 25 years and over - Bachelor's degree
+*   graduate      = Population 25 years and over - Graduate or professional degree
+*   hs_or_less    = Population 25 years and over with HS equivalent education or less
+*   college       = Population 25 years and over with at least some college education
+*   total_pop     = Estimate of the Total Population 25 years and over
+
+```{r, message=FALSE}
+edu18 =
+  read_csv("data/edu/edu_2018.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y18        = s1501_c01_007e,
+    no_hs_diploma_y18 = s1501_c01_008e,
+    hs_grad_y18       = s1501_c01_009e,
+    some_college_y18  = s1501_c01_010e,
+    associate_y18     = s1501_c01_011e,
+    bachelor_y18      = s1501_c01_012e,
+    graduate_y18      = s1501_c01_013e,
+    total_pop_y18     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y18","no_hs_diploma_y18","hs_grad_y18","some_college_y18","associate_y18",
+              "bachelor_y18","graduate_y18", "total_pop_y18"), as.numeric) |> 
+  mutate(
+    hs_or_less_y18 = (rowSums(across(c(less_9_y18,no_hs_diploma_y18,hs_grad_y18))))/total_pop_y18,
+    college_y18    = (rowSums(across(c(some_college_y18,associate_y18,bachelor_y18,graduate_y18))))/total_pop_y18
+  )
+
+edu19 =
+  read_csv("data/edu/edu_2019.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y19        = s1501_c01_007e,
+    no_hs_diploma_y19 = s1501_c01_008e,
+    hs_grad_y19       = s1501_c01_009e,
+    some_college_y19  = s1501_c01_010e,
+    associate_y19     = s1501_c01_011e,
+    bachelor_y19      = s1501_c01_012e,
+    graduate_y19      = s1501_c01_013e,
+    total_pop_y19     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y19","no_hs_diploma_y19","hs_grad_y19","some_college_y19","associate_y19",
+              "bachelor_y19","graduate_y19", "total_pop_y19"), as.numeric) |> 
+  mutate(
+    hs_or_less_y19 = (rowSums(across(c(less_9_y19,no_hs_diploma_y19,hs_grad_y19))))/total_pop_y19,
+    college_y19    = (rowSums(across(c(some_college_y19,associate_y19,bachelor_y19,graduate_y19))))/total_pop_y19
+  )
+
+edu20 =
+  read_csv("data/edu/edu_2020.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y20        = s1501_c01_007e,
+    no_hs_diploma_y20 = s1501_c01_008e,
+    hs_grad_y20       = s1501_c01_009e,
+    some_college_y20  = s1501_c01_010e,
+    associate_y20     = s1501_c01_011e,
+    bachelor_y20      = s1501_c01_012e,
+    graduate_y20      = s1501_c01_013e,
+    total_pop_y20     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y20","no_hs_diploma_y20","hs_grad_y20","some_college_y20","associate_y20",
+              "bachelor_y20","graduate_y20", "total_pop_y20"), as.numeric) |> 
+  mutate(
+    hs_or_less_y20 = (rowSums(across(c(less_9_y20,no_hs_diploma_y20,hs_grad_y20))))/total_pop_y20,
+    college_y20    = (rowSums(across(c(some_college_y20,associate_y20,bachelor_y20,graduate_y20))))/total_pop_y20
+  )
+
+edu21 =
+  read_csv("data/edu/edu_2021.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y21        = s1501_c01_007e,
+    no_hs_diploma_y21 = s1501_c01_008e,
+    hs_grad_y21       = s1501_c01_009e,
+    some_college_y21  = s1501_c01_010e,
+    associate_y21     = s1501_c01_011e,
+    bachelor_y21      = s1501_c01_012e,
+    graduate_y21      = s1501_c01_013e,
+    total_pop_y21     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y21","no_hs_diploma_y21","hs_grad_y21","some_college_y21","associate_y21",
+              "bachelor_y21","graduate_y21", "total_pop_y21"), as.numeric) |> 
+  mutate(
+    hs_or_less_y21 = (rowSums(across(c(less_9_y21,no_hs_diploma_y21,hs_grad_y21))))/total_pop_y21,
+    college_y21    = (rowSums(across(c(some_college_y21,associate_y21,bachelor_y21,graduate_y21))))/total_pop_y21
+  )
+
+edu_10s = 
+  full_join(edu18, edu19, by = "geo_id")
+
+edu_20s = 
+  full_join(edu20, edu21, by = "geo_id")
+
+edu_all =
+  full_join(edu_10s, edu_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+#### **Poverty Data**
+
+Lower-income areas might have fewer resources/organizations for building maintenance and rodent control which in turn creates an environment that can sustain the rat population. On the other hand, higher-income areas might be more likely to report rat sightings.
+
+*   below_poverty = % below poverty level among population for whom poverty status is determined
+*   prop_poverty  = proportion of households below the poverty level among population for whom poverty status is 
+                    determined
+
+```{r, message=FALSE}
+poverty18 =
+  read_csv("data/poverty/2018_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y18 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y18"), as.numeric) |> 
+  mutate(prop_poverty_y18 = below_poverty_y18/100)
+
+poverty19 =
+  read_csv("data/poverty/2019_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y19 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y19"), as.numeric) |> 
+  mutate(prop_poverty_y19 = below_poverty_y19/100)
+
+poverty20 =
+  read_csv("data/poverty/2020_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y20 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y20"), as.numeric) |> 
+  mutate(prop_poverty_y20 = below_poverty_y20/100)
+  
+poverty21 =
+  read_csv("data/poverty/2021_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y21 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y21"), as.numeric) |> 
+  mutate(prop_poverty_y21 = below_poverty_y21/100)
+
+poverty_10s = 
+  full_join(poverty18, poverty19, by = "geo_id")
+
+poverty_20s = 
+  full_join(poverty20, poverty21, by = "geo_id")
+
+poverty_all =
+  full_join(poverty_10s, poverty_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+#### **Vacancy Data**
+
+Empty households can be conducive to supporting the rat population since with no people are actively living there, there is no one reporting the rats or attempting to control the size of the population. It allows the rats to nest and hide away from severe environmental conditions (rain, snow) and predators.
+
+*   total_home  = total number of properties for residential purposes
+*   vacant      = total number of vacant properties
+*   prop_vacant = proportion of vacant properties in a census tract
+
+```{r, message=FALSE}
+vacancy18 =
+  read_csv("data/vacancy/2018_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y18 = b25004_001e,
+    vacant_y18     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y18","vacant_y18"), as.numeric) |> 
+  mutate(prop_vacant_y18 = vacant_y18/total_home_y18)
+
+vacancy19 =
+  read_csv("data/vacancy/2019_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y19 = b25004_001e,
+    vacant_y19     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y19","vacant_y19"), as.numeric) |> 
+  mutate(prop_vacant_y19 = vacant_y19/total_home_y19)
+
+vacancy20 =
+  read_csv("data/vacancy/2020_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y20 = b25004_001e,
+    vacant_y20     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y20","vacant_y20"), as.numeric) |> 
+  mutate(prop_vacant_y20 = vacant_y20/total_home_y20)
+  
+vacancy21 =
+  read_csv("data/vacancy/2021_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y21 = b25004_001e,
+    vacant_y21     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |>  
+  mutate_at(c("total_home_y21","vacant_y21"), as.numeric) |> 
+  mutate(prop_vacant_y21 = vacant_y21/total_home_y21)
+
+vacancy_10s = 
+  full_join(vacancy18, vacancy19, by = "geo_id")
+
+vacancy_20s = 
+  full_join(vacancy20, vacancy21, by = "geo_id")
+
+vacancy_all =
+  full_join(vacancy_10s, vacancy_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate( 
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+    ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+It should be noted that the dataset included information about other types of properties but were unoccupied such as rental properties, those listed for sale, properties sold but unoccupied, those designated for migrant workers, and residences that were used occasionally/seasonally/recreationally. The only variable considered in this analysis was vacant properties however it is likely that residences that go unoccupied for several months can become nests for the rat population, increasing sightings in those areas. A more thorough and in-depth analysis should include the other variables provided in the dataset. 
+
+In general, we might be losing information with the variables chosen for analysis. During data collection, the variables were further subsetted into age groups and race/ethnicity designations. However for this analysis, the general estimates were taken for the population as a whole in NYC, therefore we did not analyze any potential disparities between race or age groups.
+
+When importing data from 2018 and 2019, there were 4918 census tracts and when importing data from 2020 and 2021, there were 5411 census tracts. The datasets for each year were joined together by geography id to only retain census tracts that were consistent across the years. There may have been adjustments or redefining areas but that could affect analysis as well.
+
+Time Series Plots:
+-------------------
+
+#### **Crowding**
+
+```{r}
+crowding_time = crowding_all |> 
+  pivot_longer(less_than_1_y18:more_prop_y21,
+               names_to = "occupancy",
+               values_to = "count") |> 
+  mutate(year     = str_sub(occupancy, -3),
+         category = str_sub(occupancy, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |>
+  mutate(year = as.factor(year)) |> 
+  filter(category == "more_prop") |> 
+  group_by(county,year) |> 
+  summarise(mean = mean(count)) |> 
+  plot_ly(x = ~year, y = ~mean, color = ~county, type = "scatter", mode = "lines", 
+          colors = "viridis") |> 
+  layout(title = "Timeseries of Average Proportion of Households with 1.51 or More <br> Occupants/Room by Borough in NYC",
+         plot_bgcolor = "e5ecf6", 
+         xaxis = list(autotypenumbers = 'strict', title = 'Year'), 
+         yaxis = list(title = 'Average Proportion of Housing Units'))
+
+crowding_time
+```
+
+Over the observed years in the dataset, New York County (Manhattan) appeared to be the only county with a noticeable reduction in the average proportion of housing units with 1.51 or more occupants per room. Kings (Brooklyn) and Queens County had a slight increase while Bronx County had a slight decrease between years 2020 and 2021. Compared to Queens and Kings County, Richmond County (Staten Island) had the largest increase after the pandemic. Overall, Bronx County had the highest average proportion, 0.047, of households with 1.51 or more occupants per room at the end of 2021 while Richmond (Staten Island) County had the lowest (0.021).
+
+#### **Education Level**
+
+```{r}
+edu_time = edu_all |> 
+  pivot_longer(less_9_y18:college_y21,
+               names_to = "education_level",
+               values_to = "count") |> 
+  mutate(year     = str_sub(education_level, -3),
+         category = str_sub(education_level, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  mutate(year = as.factor(year)) |> 
+  filter(category == "hs_or_less") |> 
+  group_by(county,year) |> 
+  summarise(mean = mean(count)) |> 
+  plot_ly(x = ~year, y = ~mean, color = ~county, type = "scatter", mode = "lines", 
+          colors = "viridis") |> 
+  layout(title = "Timeseries of Average Proportion of Individuals with HS Education Level <br> or less by Borough in NYC",
+         plot_bgcolor = "e5ecf6", 
+         xaxis = list(autotypenumbers = 'strict', title = 'Year'), 
+         yaxis = list(title = 'Average Number of Individuals'))
+
+edu_time
+```
+
+Over the observed years in the dataset, all of the counties, except Richmond (Staten Island), had a decrease in the average proportion of individuals with a high school education or less. Richmond County appeared to be static over the years, with a potentially slight increase by the end of 2021. Overall, Bronx County had the highest average proportion, 0.531, of individuals ages 25 years and older with a high school education or less at the end of 2021 while New York (Manhattan) County had the lowest (0.242).
+
+#### **Poverty**
+
+```{r}
+poverty_time = poverty_all |> 
+  pivot_longer(below_poverty_y18:prop_poverty_y21,
+               names_to = "poverty_level",
+               values_to = "count") |> 
+  mutate(year = str_sub(poverty_level, -3),
+         category = str_sub(poverty_level, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  mutate(year = as.factor(year)) |> 
+  filter(category == "prop_poverty") |> 
+  group_by(county,year) |> 
+  summarise(mean = mean(count)) |> 
+  plot_ly(x = ~year, y = ~mean, color = ~county, type = "scatter", mode = "lines", 
+          colors = "viridis") |> 
+  layout(title = "Timeseries of Average Proportion of Households Below <br> the Poverty Level by Borough in NYC",
+         plot_bgcolor = "e5ecf6", 
+         xaxis = list(autotypenumbers = 'strict', title = 'Year'), 
+         yaxis = list(title = 'Average Proportion of Households Below Poverty Level'))
+
+poverty_time
+```
+
+Over the observed years in the dataset, all of the counties had a decrease in the average proportion of households below the poverty level, with the most significant decrease occurring in the Bronx from 2018 to 2021. Overall, Bronx County had the highest average proportion, 0.257, of households below the poverty line among the population for which poverty status was determined at the end of 2021 while Queens County had the lowest (0.109).
+
+#### **Vacancy**
+
+```{r}
+vacancy_time = vacancy_all |> 
+  pivot_longer(total_home_y18:prop_vacant_y21,
+               names_to = "vacancy",
+               values_to = "count") |> 
+  mutate(year     = str_sub(vacancy, -3),
+         category = str_sub(vacancy, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  mutate(year = as.factor(year)) |>
+  filter(category == "prop_vacant") |> 
+  group_by(county,year) |> 
+  summarise(mean = mean(count)) |> 
+  plot_ly(x = ~year, y = ~mean, color = ~county, type = "scatter", mode = "lines", 
+          colors = "viridis") |> 
+  layout(title = "Timeseries of Average Proportion of Vacant Properties by Borough in NYC",
+         plot_bgcolor = "e5ecf6", 
+         xaxis = list(autotypenumbers = 'strict', title = 'Year'), 
+         yaxis = list(title = 'Average Proportion'))
+
+vacancy_time
+```
+
+Over the observed years in the dataset, Bronx and Richmond (Staten Island) County dipped during 2020 and then increased again in the average proportion of vacant properties at the end of 2021. On the other hand, Queens, Kings (Brooklyn), and New York (Manhattan) County peaked during 2020, and then decreased in the average proportion of vacant properties at the end of 2021. Overall, Queens County had the highest average proportion, 0.503, of vacant properties for residential purposes at the end of 2021 while New York (Manhattan) County had the lowest (0.242).
+
+Rat Sighting Distribution by Borough:
+----------------------------------------
+
+```{r}
+sightings = read_csv('data/NYC_Rat_Sightings.csv') |> 
+  janitor::clean_names() |> 
+  separate(created_date, into=c("month","e","day","f","year","g","time"), sep=c(2,3,5,6,10,11)) |> 
+  select(-e,-f,-g) |> 
+  mutate(date = paste(year, month, day, sep=""),
+         date = as.numeric(date)) |>  
+  filter(date <= 20231031, date >= 20160101, !incident_zip <= 10000, !incident_zip >11697, !borough %in%
+           c("Unspecified", NA)) |> 
+  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name,
+         -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp,
+         -bridge_highway_segment, -bridge_highway_direction) |> 
+  select(unique_key, date, year, month, day, everything()) 
+```
+
+*deepness of color shows density of counts*
+
+**Bronx**
+
+```{r}
+sightings |>
+  filter(year == "2021",
+         city == "BRONX") |>
+  plot_ly(x=~longitude, 
+          y=~latitude, 
+          type="scatter", 
+          mode="markers", 
+          marker=list(color="darkblue",size=2,opacity=0.5))
+```
+
+**Manhattan**
+
+```{r}
+sightings |>
+  filter(year == "2021",
+         city == "NEW YORK") |>
+  plot_ly(x=~longitude, 
+          y=~latitude, 
+          type="scatter", 
+          mode="markers", 
+          marker=list(color="darkblue",size=2,opacity=0.5))
+```
+
+**Queens**
+
+```{r}
+sightings |>
+  filter(year == "2021",
+         city == "QUEENS") |>
+  plot_ly(x=~longitude, 
+          y=~latitude, 
+          type="scatter", 
+          mode="markers", 
+          marker=list(color="darkblue",size=2,opacity=0.5))
+```
+
+**Brooklyn**
+
+```{r}
+sightings |>
+  filter(year == "2021",
+         city == "BROOKLYN") |>
+  plot_ly(x=~longitude, 
+          y=~latitude, 
+          type="scatter", 
+          mode="markers", 
+          marker=list(color="darkblue",size=2,opacity=0.5))
+```
+
+**Staten Island**
+
+```{r}
+sightings |>
+  filter(year == "2021",
+         city == "STATEN ISLAND") |>
+  plot_ly(x=~longitude, 
+          y=~latitude, 
+          type="scatter", 
+          mode="markers", 
+          marker=list(color="darkblue",size=2,opacity=0.5))
+```
+
+Choropleth Maps by Borough:
+----------------------------
+
+I compared the rat density plots by borough with the choropleth maps for the various SES variables. I focused on the borough with the highest and lowest average proportion (as shown in the time series plots) to see if there were any significant differences when looking at the rat sighting distributions.
+
+#### **Crowding:**  
+Bronx (highest),  Richmond (lowest)
+
+```{r, include=FALSE}
+crowding_Bronx = crowding_all |> 
+  pivot_longer(less_than_1_y18:more_prop_y21,
+               names_to = "occupancy",
+               values_to = "count") |> 
+  mutate(year     = str_sub(occupancy, -3),
+         category = str_sub(occupancy, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  filter(category == "more_prop",
+         year == "2021",
+         county == " Bronx County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Bronx_crowding_chp = tract_choropleth(crowding_Bronx,"new york", county_zoom = 36005,
+                                         title = "2021 Proportion of Households with 1.51 or More Occupants/Room in 
+                                         Bronx by Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Bronx_crowding_chp
+```
+
+```{r, include=FALSE}
+crowding_Staten = crowding_all |> 
+  pivot_longer(less_than_1_y18:more_prop_y21,
+               names_to = "occupancy",
+               values_to = "count") |> 
+  mutate(year     = str_sub(occupancy, -3),
+         category = str_sub(occupancy, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  filter(category == "more_prop",
+         year == "2021",
+         county == " Richmond County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Staten_crowding_chp = tract_choropleth(crowding_Staten,"new york", county_zoom = 36085,
+                                         title = "2021 Proportion of Households with 1.51 or More Occupants/Room in 
+                                         Staten Island by Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Staten_crowding_chp
+```
+
+Comparing the plot to the map for the Bronx, it appears that the density of rat sightings are more concentrated in census tracts with higher proportions of crowded households, which is towards the west side of the county. For Staten Island, rat sightings appears to be somewhat associated with proportion of crowded households. In census tracts where there is minimal crowding, there are hardly any rat sightings while in census tracts with more crowding, there appears to be more rat sightings.
+
+#### **Education:** 
+Bronx (highest),  New York (lowest)
+
+```{r, include=FALSE}
+edu_Bronx = edu_all |> 
+  pivot_longer(less_9_y18:college_y21,
+               names_to = "education_level",
+               values_to = "count") |> 
+  mutate(year     = str_sub(education_level, -3),
+         category = str_sub(education_level, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  filter(category == "hs_or_less",
+         year == "2021",
+         county == " Bronx County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Bronx_edu_chp = tract_choropleth(edu_Bronx,"new york", county_zoom = 36005,
+                                         title = "2021 Proportion of Individuals with HS Education Level or less in 
+                                         Bronx by Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Bronx_edu_chp
+```
+
+```{r, include=FALSE}
+edu_Manhattan = edu_all |> 
+  pivot_longer(less_9_y18:college_y21,
+               names_to = "education_level",
+               values_to = "count") |> 
+  mutate(year     = str_sub(education_level, -3),
+         category = str_sub(education_level, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  filter(category == "hs_or_less",
+         year == "2021",
+         county == " New York County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Manhattan_edu_chp = tract_choropleth(edu_Manhattan,"new york", county_zoom = 36061,
+                                         title = "2021 Proportion of Individuals with HS Education Level or less in 
+                                         Manhattan by Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Manhattan_edu_chp
+```
+
+Comparing the plot to the map for the Bronx, it appears that the density of rat sightings are more concentrated in census tracts with higher proportions of individuals with a high school level education or less, which is towards the west and southwest side of the county. In areas with lower proportions of lower education level, there doesn't seem to be as many rat sightings. For Manhattan, there is higher density of rat sightings towards the north and southeast of the county, which is also where there is a higher density of census tracts with high proportions of lower education levels. However, there does appear to be hot spots of rat sightings in census tracts with lower proportions of lower education levels making the potential association between rat sightings and education level unclear. 
+
+#### **Poverty:**  
+Bronx (highest),  Queens (lowest)
+
+```{r, include=FALSE}
+poverty_Bronx = poverty_all |> 
+  pivot_longer(below_poverty_y18:prop_poverty_y21,
+               names_to = "poverty_level",
+               values_to = "count") |> 
+  mutate(year = str_sub(poverty_level, -3),
+         category = str_sub(poverty_level, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |>
+  filter(category == "prop_poverty",
+         year == "2021",
+         county == " Bronx County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Bronx_poverty_chp = tract_choropleth(poverty_Bronx,"new york", county_zoom = 36005,
+                                         title = "2021 Proportion of Households Below the Poverty Level in
+                                         Bronx by Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Bronx_poverty_chp
+```
+
+```{r, include=FALSE}
+poverty_Queens = poverty_all |> 
+  pivot_longer(below_poverty_y18:prop_poverty_y21,
+               names_to = "poverty_level",
+               values_to = "count") |> 
+  mutate(year = str_sub(poverty_level, -3),
+         category = str_sub(poverty_level, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |>
+  filter(category == "prop_poverty",
+         year == "2021",
+         county == " Queens County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Queens_poverty_chp = tract_choropleth(poverty_Queens,"new york", county_zoom = 36081,
+                                         title = "2021 Proportion of Households Below the Poverty Level in
+                                         Queens by Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Queens_poverty_chp
+```
+
+Comparing the plot to the map for the Bronx, it appears that the density of rat sightings are more concentrated in census tracts with higher proportions of households below the poverty level, which is mainly towards the west and south side of the county, with some clusters in the west side. In areas with lower proportions of households below the poverty level, there doesn't seem to be as many rat sightings. For Queens, there are hardly any rat sightings. The choropleth map on the other hand displays a few distinct areas where census tracts have higher proportions of households below the poverty level. Conclusions can't really be drawn since there isn't enough data on rat sightings in that county, however, this may also act as an indicator that poverty level might not be associated with rat sightings.
+
+#### **Vacancy:**   
+Queens (highest), New York (lowest)
+
+```{r, include=FALSE}
+vacancy_Queens = vacancy_Manhattan = vacancy_all |>
+  pivot_longer(total_home_y18:prop_vacant_y21,
+               names_to = "vacancy",
+               values_to = "count") |> 
+  mutate(year     = str_sub(vacancy, -3),
+         category = str_sub(vacancy, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  filter(category == "prop_vacant",
+         year == "2021",
+         county == " Queens County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Queens_vacancy_chp = tract_choropleth(vacancy_Queens,"new york", county_zoom = 36081,
+                                         title = "2021 Proportion of Vacant Properties in Queens by
+                                         Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Queens_vacancy_chp
+```
+
+```{r, include=FALSE}
+vacancy_Manhattan = vacancy_all |>
+  pivot_longer(total_home_y18:prop_vacant_y21,
+               names_to = "vacancy",
+               values_to = "count") |> 
+  mutate(year     = str_sub(vacancy, -3),
+         category = str_sub(vacancy, end=-5)) |> 
+  mutate(
+    year = case_match(
+      year,
+      "y18" ~ 2018,
+      "y19" ~ 2019,
+      "y20" ~ 2020,
+      "y21" ~ 2021
+    )
+  ) |> 
+  filter(category == "prop_vacant",
+         year == "2021",
+         county == " New York County") |> 
+  rename(region = "id",
+         value  = "count") |> 
+  select(region, value, county) |> 
+  mutate_at(c("region"), as.numeric)
+
+Manhattan_vacancy_chp = tract_choropleth(vacancy_Manhattan,"new york", county_zoom = 36061,
+                                         title = "2021 Proportion of Vacant Properties in Manhattan by
+                                         Census Tract",
+                                         legend = "Proportion")
+```
+
+```{r}
+Manhattan_vacancy_chp
+```
+
+As mentioned before, there are hardly any rat sightings in Queens. The choropleth map also shows a seemingly random distribution of census tracts with low proportions of vacant properties. Conclusions can't really be drawn since there isn't enough data on rat sightings in that county, however, this may also act as an indicator that vacant properties might not be associated with rat sightings. For Manhattan, it seems that census tracts with higher proportions of vacant properties are predominately located towards the north of the county as well as a few spots in the southern section of the county. This somewhat aligns with the rat density sightings since there appears to be higher density towards the northern and certain parts of the southern section of the county. However, there are hotspots of rat sightings in census tracts with low proportions of vacant properies making the potential association between rat sightings and vacant properties unclear.
+
+Across all of these analyses, it appears that crowding has the clearest association with rat sighting density. These are very general analyses since it is a bit difficult to compare between the distribution plot and the choropleth maps. A more effective method would be overlaying the scatterplot onto the choropleth map or somehow combining the data of rat sightings with the SES datasets. We are limited to the variables that are provided by the census data and the city so we weren't able to find a variable that could be matched to combine the two different datasets. A follow up analysis should also evaluate how correlated the SES variables are with each other, which could impact the associations we see with the rat density data.
