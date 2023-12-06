@@ -8,25 +8,6 @@ navbar:
   right:
     - text: "Introduction"
       href: intro.html
-    - text: "Data"
-      menu:
-        - text: "Data Sources"
-          href: data_sources.html
-        - text: "Data Overview"
-          href: data_overview.html
-    - text: "Analyses"
-      menu:
-        - text: "Exploratory Analysis"
-          href: explanatory.html
-        - text: "Statistical Analysis"
-          href: statistical.html
-    - text: "Conclusions"
-        - text: "Data Visualization"
-          href: visualization.html
-        - text: "Results"
-          href: results.html
-    - text: "About Us"
-      href: about.html
     - icon: fa-github fa-lg
       href: https://github.com/austin-hsin/P8105_Final_Project
       
