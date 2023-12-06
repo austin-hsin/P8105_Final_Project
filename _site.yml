@@ -2,13 +2,34 @@ name: "Project"
 output_dir: "."
 navbar:
   title: "Home"
+  left:
+    - text: "Project Report"
+      href: report.html
   right:
-    -test: "About"
-    href: about.html
-    -icon: fa-envelope fa-lg
-    href: mailto:<eb3516@cumc.columbia.edu>
-    -icon: fa-github fa-lg
-    href: http://github.com/austin-hsin/
+    - text: "Introduction"
+      href: intro.html
+    - text: "Data"
+      menu:
+        - text: "Data Sources"
+          href: data_sources.html
+        - text: "Data Overview"
+          href: data_overview.html
+    - text: "Analyses"
+      menu:
+        - text: "Exploratory Analysis"
+          href: explanatory.html
+        - text: "Statistical Analysis"
+          href: statistical.html
+    - text: "Conclusions"
+        - text: "Data Visualization"
+          href: visualization.html
+        - text: "Results"
+          href: results.html
+    - text: "About Us"
+      href: about.html
+    - icon: fa-github fa-lg
+      href: https://github.com/austin-hsin/P8105_Final_Project
+      
 output:
   html_document:
-    theme: cerulean
+    theme: yeti
