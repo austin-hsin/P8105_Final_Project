@@ -24,6 +24,8 @@ navbar:
       menu:
         - text: "Data Visualization"
           href: visualization.html
+        - text: "Results"
+          href: results.html
     - icon: fa-github fa-lg
       href: https://github.com/austin-hsin/P8105_Final_Project
       
