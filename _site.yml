@@ -34,3 +34,4 @@ navbar:
 output:
   html_document:
     theme: yeti
+    always_allow_html: true
