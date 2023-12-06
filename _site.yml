@@ -8,6 +8,10 @@ navbar:
   right:
     - text: "Introduction"
       href: intro.html
+    - text: "Data"
+      menu:
+        - text: "Data Sources"
+          href: data_sources.html
     - icon: fa-github fa-lg
       href: https://github.com/austin-hsin/P8105_Final_Project
       
