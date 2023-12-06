@@ -65,3 +65,8 @@ violations_plot_df |>
   geom_point() +
   theme(axis.text.x = element_text(angle = 40, hjust = 1))
 ```
+
+Note: consider year comparisons of geographic data? 2020-2023 from pandemic onwards
+Discuss why the data is so low prior to 2020 and shot up after pandemic
+Descriptive discussion on comparing to other creature violations and why that may be - whether rats are as important if they're not as prevalent
+ORDER cuisine type graph + describe the graph
