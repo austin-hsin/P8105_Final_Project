@@ -20,6 +20,10 @@ navbar:
           href: exploratory.html
         - text: "Statistical Analysis"
           href: statistical.html
+    - text: "Conclusions"
+      menu:
+        - text: "Data Visualization"
+          href: visualization.html
     - icon: fa-github fa-lg
       href: https://github.com/austin-hsin/P8105_Final_Project
       
