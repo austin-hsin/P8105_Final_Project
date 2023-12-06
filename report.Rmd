@@ -1,5 +1,5 @@
 ---
-title: "Report"
+title: "Final Project Report"
 output: 
   html_document:
     toc: true
