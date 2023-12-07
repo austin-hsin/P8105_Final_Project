@@ -1,5 +1,5 @@
 ---
-title: "Sightings"
+title: "Rat Sightings Analysis"
 output: html_document
 ---
 
@@ -24,38 +24,36 @@ sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
   select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |> select(unique_key, date, year, month, day, everything())
 ```
 
-story:
-rat sightings have gone up drastically since 2020, when their populations were able to thrive as people were quarantined inside. based on rat sighting data, what is the scope of the NYC rats problem?
+Let's first see how the number of rat sightings in NYC have changed over time. We can see that sightings went up drastically since 2020, when the rat populations were able to thrive as people were quarantined inside.
+
 ```{r}
 # total count per year - sharp increase after 2020, peak 2022
 sightings |> group_by(year) |>
   summarize(count=n()) |>
   plot_ly(x=~year, y=~count, type="scatter", mode="line")
+```
 
-# total count per year by borough - most in brooklyn and manhattan
-sightings |> 
-  group_by(year, borough) |> 
-  summarize(count=n()) |> 
-  plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line")
+And if we look by time of year, we find that in each year May through October have the highest count of rat sightings.
 
+```{r}
 # trends by month of the year - bulk between april/may to october/november
 sightings |> 
   group_by(year,month) |> 
   summarize(count = n()) |> 
   ggplot(aes(x=month, y=count, color=year, group=year)) + geom_line() 
-
-# 2023 rat sightings - deepness of color shows density of counts: not a lot in SI, west side of bk, UWS/CPwest, some in upper MH, spread out in bronx
-sightings |>
-  filter(year=="2023") |>
-  plot_ly(x=~longitude, y=~latitude, type="scatter", mode="markers", marker=list(color="darkblue",size=1, opacity=0.5))
-
-# all rat sightings
-sightings |>
-  plot_ly(x=~longitude, y=~latitude, type="scatter", mode="markers", marker=list(size=1, opacity=0.05))
-
 ```
 
-a rat czar was appointed in april 2023. what have the number of rat sightings looked like in the 6 months before vs after she was crowned? 
+Let's further break down these trends by borough:
+
+```{r}
+# total count per year by borough - most in brooklyn and manhattan
+sightings |> 
+  group_by(year, borough) |> 
+  summarize(count=n()) |> 
+  plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line")
+```
+
+In April 2023, a "Rat Czar" was appointed to tackle the problem of rat presence across the city. Let's map the number of rat sightings and the linear regression in the 6 months pre vs. post-appointment.
 
 ```{r}
 # looking at rat czar effects
@@ -103,5 +101,5 @@ czar_after |>
 # slope is decreasing but also not significant ( y= 2441.29 - 5.71x)
 ```
 
-This data doesn't look very promising, as it seems like there are probably a lot of other factors that are associated with rat sightings. So what does the rat czar need to do to tackle the NYC rat problem? 
+While we find that there are changes in the slope post-appointment, they are not statistically significant. As such, it seems like there are probably a number of other factors associated with rat sightings.
 
