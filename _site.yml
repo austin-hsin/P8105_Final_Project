@@ -16,10 +16,16 @@ navbar:
           href: data_overview.html
     - text: "Analyses"
       menu:
-        - text: "Exploratory Analysis"
-          href: exploratory.html
-        - text: "Statistical Analysis"
-          href: statistical.html
+        - text: "Rat Sightings Analysis"
+          href: sightings.html
+        - text: "Rats & Weather Analysis"
+          href: weather.html
+        - text: "Rats & Trash Analysis"
+          href: trash.html
+        - text: "Rats & Restaurant Analysis"
+          href: restaurant.html
+        - text: "Rats & Social Analysis"
+          href: social.html
     - text: "Conclusions"
       menu:
         - text: "Data Visualization"
