@@ -2,10 +2,9 @@ name: "Project"
 output_dir: "."
 navbar:
   title: "Home"
-  left:
+  right:
     - text: "Project Report"
       href: report.html
-  right:
     - text: "Introduction"
       href: intro.html
     - text: "Data"
