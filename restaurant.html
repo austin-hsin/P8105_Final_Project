@@ -11,7 +11,7 @@
 
 
 
-<title>Restaurants</title>
+<title>Rats &amp; Restaurants Analysis</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -324,15 +324,11 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Restaurants</h1>
+<h1 class="title toc-ignore">Rats &amp; Restaurants Analysis</h1>
 
 </div>
 
 
-<div id="nyc-restaurant-inspections" class="section level1">
-<h1>NYC Restaurant Inspections</h1>
-<p>Cleaning and organizing NYC Restaurant Inspections by violation 04K -
-evidence of rats</p>
 <pre class="r"><code>#Importing NYC Restaurant Inspections csv
 inspections_df = read_csv(&quot;./data/NYC_Restaurant_Inspections.csv&quot;) |&gt;
   janitor::clean_names() |&gt;
@@ -352,21 +348,15 @@ inspections_df = read_csv(&quot;./data/NYC_Restaurant_Inspections.csv&quot;) |&g
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<p>Plotting 04K violations</p>
+<p>Using information regarding restaurant health inspection violation
+code 40K, evidence of rats, can also give us insight to the rat problem
+in NYC.</p>
 <pre class="r"><code>#Observations of violations
 violations_plot_df &lt;- inspections_df |&gt;
   group_by(Year, boro, violation_code) |&gt;
   mutate(code_obs = n())
 
-#Plotting 04K violations by coordinates
-violations_plot_df |&gt;
-  filter(latitude &gt; 0) |&gt;
-  filter(violation_code == &quot;04K&quot;) |&gt;
-  ggplot(aes(x = longitude, y = latitude, color = boro)) +
-  geom_point(alpha = 0.5) +
-  coord_cartesian()</code></pre>
-<p><img src="restaurant_files/figure-html/violation%20plot-1.png" width="672" /></p>
-<pre class="r"><code>#Plotting 04K violations by year and boro
+#Plotting 04K violations by year and boro
 violations_plot_df |&gt;
   filter(violation_code == &quot;04K&quot;) |&gt;
   ggplot(aes(x = as.numeric(Year), y = code_obs, color = boro)) +
@@ -375,13 +365,13 @@ violations_plot_df |&gt;
   scale_x_continuous(
     breaks = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023), 
     labels = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023))</code></pre>
-<p><img src="restaurant_files/figure-html/violation%20plot-2.png" width="672" /></p>
+<p><img src="restaurant_files/figure-html/violation%20plot-1.png" width="672" /></p>
 <pre class="r"><code>#Plotting 04K violations to other 04 violations
 violations_plot_df |&gt;
   filter(violation_code %in% c(&quot;04K&quot;,&quot;04M&quot;,&quot;04L&quot;, &quot;04O&quot;)) |&gt;
   ggplot(aes(x = violation_code), color = violation_code) +
   geom_bar()</code></pre>
-<p><img src="restaurant_files/figure-html/violation%20plot-3.png" width="672" /></p>
+<p><img src="restaurant_files/figure-html/violation%20plot-2.png" width="672" /></p>
 <pre class="r"><code>#Plotting 04K violations by cuisine type
 violations_plot_df |&gt;
   filter(violation_code == &quot;04K&quot;) |&gt;
@@ -391,14 +381,7 @@ violations_plot_df |&gt;
   ggplot(aes(x = cuisine_description, y = cuisine_obs)) +
   geom_point() +
   theme(axis.text.x = element_text(angle = 40, hjust = 1))</code></pre>
-<p><img src="restaurant_files/figure-html/violation%20plot-4.png" width="672" /></p>
-<p>Note: consider year comparisons of geographic data? 2020-2023 from
-pandemic onwards Discuss why the data is so low prior to 2020 and shot
-up after pandemic Descriptive discussion on comparing to other creature
-violations and why that may be - whether rats are as important if
-they’re not as prevalent ORDER cuisine type graph + describe the
-graph</p>
-</div>
+<p><img src="restaurant_files/figure-html/violation%20plot-3.png" width="672" /></p>
 
 
 

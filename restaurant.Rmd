@@ -1,5 +1,5 @@
 ---
-title: "Restaurants"
+title: "Rats & Restaurants Analysis"
 output: html_document
 ---
 
@@ -7,10 +7,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
-
-# NYC Restaurant Inspections
-
-Cleaning and organizing NYC Restaurant Inspections by violation 04K - evidence of rats
 
 ```{r inspections_df}
 #Importing NYC Restaurant Inspections csv
@@ -21,21 +17,13 @@ inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
   filter(as.numeric(Year) > 2015)
 ```
 
-Plotting 04K violations
+Using information regarding restaurant health inspection violation code 40K, evidence of rats, can also give us insight to the rat problem in NYC.
 
 ```{r violation plot}
 #Observations of violations
 violations_plot_df <- inspections_df |>
   group_by(Year, boro, violation_code) |>
   mutate(code_obs = n())
-
-#Plotting 04K violations by coordinates
-violations_plot_df |>
-  filter(latitude > 0) |>
-  filter(violation_code == "04K") |>
-  ggplot(aes(x = longitude, y = latitude, color = boro)) +
-  geom_point(alpha = 0.5) +
-  coord_cartesian()
 
 #Plotting 04K violations by year and boro
 violations_plot_df |>
@@ -63,8 +51,3 @@ violations_plot_df |>
   geom_point() +
   theme(axis.text.x = element_text(angle = 40, hjust = 1))
 ```
-
-Note: consider year comparisons of geographic data? 2020-2023 from pandemic onwards
-Discuss why the data is so low prior to 2020 and shot up after pandemic
-Descriptive discussion on comparing to other creature violations and why that may be - whether rats are as important if they're not as prevalent
-ORDER cuisine type graph + describe the graph
