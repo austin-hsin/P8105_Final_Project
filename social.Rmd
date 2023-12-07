@@ -31,38 +31,9 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-Data Cleaning:
-----------------
-
-#### *Steps*
-
-1.    clean names and select necessary variables
-
-2.    rename the variables
-
-3.    drop any rows with missing observations
-
-4.    filter out the second row (contains comments about the columns)
-
-5.    join all the datasets
-
-6.    drop any rows with missing observations
-
-7.    create new column, id, using the geo id
-
-8.    filter to only keep counties relevant to NYC
-
 #### **Crowding data**
 
-Crowded households may promote an environment that promotes the nesting of rats due to increased garbage or unhygienic behaviors. There may be increased sightings of rats in these households because there are more people able to spot them.
-
-*   less_than_1   = Occupied housing units with 1.00 or less occupants per room
-*   bet_1to1.5    = Occupied housing units with 1.01 to 1.50 occupants per room
-*   more_than_1.5 = Occupied housing units with 1.51 or more occupants per room
-*   total_homes   = Estimate of Occupied housing units
-*   less_prop     = Proportion of occupied housing units with 1.00 or less occupants per room
-*   bet_prop      = Proportion of occupied housing units with 1.01 to 1.50 occupants per room
-*   more_prop     = Proportion of occupied housing units with 1.51 or more occupants per room
+Crowded households may promote an environment that promotes the nesting of rats due to increased garbage or unhygienic behaviors. There may also be increased sightings of rats in these households because there are more people able to spot them.
 
 ```{r, message=FALSE}
 crowding18 =
@@ -160,18 +131,7 @@ crowding_all =
 
 #### **Education Level Data**
 
-Prior research in other cities has shown an association between low education and rat sightings. We hypothesized that individuals with lower education may be unable to access newly renovated, or well-maintained housing units. As a result, they may be more likely to come into contact with rats or live in areas that contains large numbers of the rat population.
-
-*   less_9        = Population 25 years and over - Less than 9th grade
-*   no_hs_diploma = Population 25 years and over - 9th to 12th grade, no diploma
-*   hs_grad       = Population 25 years and over - High school graduate (includes equivalency)
-*   some_college  = Population 25 years and over - Some college, no degree
-*   associate     = Population 25 years and over - Associate's degree
-*   bachelor      = Population 25 years and over - Bachelor's degree
-*   graduate      = Population 25 years and over - Graduate or professional degree
-*   hs_or_less    = Population 25 years and over with HS equivalent education or less
-*   college       = Population 25 years and over with at least some college education
-*   total_pop     = Estimate of the Total Population 25 years and over
+Prior research in other cities has shown an association between low education and increased rat sightings. We hypothesized that individuals with lower education may be unable to access newly renovated or well-maintained housing units. As a result, they may be more likely to come into contact with rats or live in areas that have a large rat population.
 
 ```{r, message=FALSE}
 edu18 =
@@ -289,11 +249,7 @@ edu_all =
 
 #### **Poverty Data**
 
-Lower-income areas might have fewer resources/organizations for building maintenance and rodent control which in turn creates an environment that can sustain the rat population. On the other hand, higher-income areas might be more likely to report rat sightings.
-
-*   below_poverty = % below poverty level among population for whom poverty status is determined
-*   prop_poverty  = proportion of households below the poverty level among population for whom poverty status is 
-                    determined
+Lower-income areas might have fewer resources for building maintenance and rodent control which in turn creates an environment that can sustain the rat population. On the other hand, higher-income areas might be more likely to report rat sightings.
 
 ```{r, message=FALSE}
 poverty18 =
@@ -359,11 +315,7 @@ poverty_all =
 
 #### **Vacancy Data**
 
-Empty households can be conducive to supporting the rat population since with no people are actively living there, there is no one reporting the rats or attempting to control the size of the population. It allows the rats to nest and hide away from severe environmental conditions (rain, snow) and predators.
-
-*   total_home  = total number of properties for residential purposes
-*   vacant      = total number of vacant properties
-*   prop_vacant = proportion of vacant properties in a census tract
+Empty households can be conducive to supporting the rat population since with no people actively living there, there is no one reporting the rats or attempting to control the size of the population. It allows the rats to nest and hide away from severe environmental conditions (rain, snow) and predators.
 
 ```{r, message=FALSE}
 vacancy18 =
@@ -431,11 +383,7 @@ vacancy_all =
                        " New York County"))
 ```
 
-It should be noted that the dataset included information about other types of properties but were unoccupied such as rental properties, those listed for sale, properties sold but unoccupied, those designated for migrant workers, and residences that were used occasionally/seasonally/recreationally. The only variable considered in this analysis was vacant properties however it is likely that residences that go unoccupied for several months can become nests for the rat population, increasing sightings in those areas. A more thorough and in-depth analysis should include the other variables provided in the dataset. 
-
 In general, we might be losing information with the variables chosen for analysis. During data collection, the variables were further subsetted into age groups and race/ethnicity designations. However for this analysis, the general estimates were taken for the population as a whole in NYC, therefore we did not analyze any potential disparities between race or age groups.
-
-When importing data from 2018 and 2019, there were 4918 census tracts and when importing data from 2020 and 2021, there were 5411 census tracts. The datasets for each year were joined together by geography id to only retain census tracts that were consistent across the years. There may have been adjustments or redefining areas but that could affect analysis as well.
 
 Time Series Plots:
 -------------------
