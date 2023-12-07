@@ -1,5 +1,5 @@
 ---
-title: "trash"
+title: "Rats and Trash Analysis"
 output: html_document
 ---
 
@@ -31,7 +31,6 @@ scale_fill_discrete = scale_fill_viridis_d
 library(dplyr)
 library(plotly)
 ```
-Looking into rat sighting v waste data
 
 ```{r load and clean waste data}
 waste <-
@@ -60,7 +59,6 @@ waste_2 = waste |>
 
 ```
 
-
 ```{r clean sightings data}
 sightings <-
   read_csv('data/NYC_Rat_Sightings.csv') |> 
@@ -79,8 +77,6 @@ sightings <-
   summarize(ratcount = n()) 
 ```
 
-
-
 ```{r merge datasets}
 merged = inner_join(waste_2, sightings, 
             by = c("year", "month", "borough")) |> 
@@ -97,22 +93,7 @@ merged_tons = merged |>
     combined_ym = ym(combined_ym) )
 ```
 
-
-
-visualization
-```{r total rat count over time by borough and year}
-ggplot(merged, aes(x=month, y = ratcount, color = borough, group = interaction(year, borough))) + 
-    geom_line() + 
-    labs(title = "Total Rat Count by Borough",
-         x = "Month",
-         y = "Rat Count",
-         caption = "Data from NYC Open Data") +
-  facet_wrap(year ~ . ) 
-
-```
-
-
-
+First, let's get an idea of how quantity of trash varies by borough.
 
 ```{r total tons over time by borough - one graph across all time}
 ggplot(merged_tons, aes(x=combined_ym, y = total_tons, color = borough, group = interaction(year, borough))) + 
@@ -123,8 +104,16 @@ ggplot(merged_tons, aes(x=combined_ym, y = total_tons, color = borough, group = 
          caption = "Data from DSNY Monthly Tonnage Data") 
 ```
 
+Now, let's add in rat count to this graph.
+```{r plotly rats by neighborhood}
+merged_tons |>
+  mutate(text_label = str_c("Number of Rats: ", ratcount, "\nTons of Trash: ", total_tons)) |> 
+  plot_ly(
+    y = ~ratcount, x = ~total_tons, type = "scatter", mode = "markers",
+    color = ~borough, text = ~text_label, alpha = 0.5)
+```
 
-
+Lastly, we'll look to see if there is any relationship between type of waste and rat count.
 ```{r plot type of waste vs. rat count}
 ggplot(merged, aes(x = ratcount, y = tons, color = type)) +
   geom_point(size = 2, alpha = .6) +
@@ -134,24 +123,6 @@ ggplot(merged, aes(x = ratcount, y = tons, color = type)) +
        y = "Total Tons",
        color = "Type of Waste",
        caption = "Data from NYC Open Data and DSNY Monthly Tonnage Data")  
-```
-
-
-
-```{r plotly trash by neighborhood}
-merged_tons |>
-  mutate(text_label = str_c("Tons of Trash: ", total_tons, "\nNumber of Rats: ", ratcount)) |> 
-  plot_ly(
-    x = ~ratcount, y = ~total_tons, type = "scatter", mode = "markers",
-    color = ~borough, text = ~text_label, alpha = 0.5)
-```
-
-```{r plotly rats by neighborhood}
-merged_tons |>
-  mutate(text_label = str_c("Number of Rats: ", ratcount, "\nTons of Trash: ", total_tons)) |> 
-  plot_ly(
-    y = ~ratcount, x = ~total_tons, type = "scatter", mode = "markers",
-    color = ~borough, text = ~text_label, alpha = 0.5)
 ```
 
 
