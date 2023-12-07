@@ -33,8 +33,8 @@ Data was either imported from csv or scraped from the web, tidied with the usual
 
 More information about the data tidying process is found [here](data-sources.html).
 
-## [Exploratory analysis](exploratory.html)
-As stated earlier, the questions we had for our project evolved as we worked to join and analyze data. Here are some select summaries and visualizations of our data (more can be found in the exploratory analysis [page](exploratory.html)).
+## [Analyses](visualization.html)
+As stated earlier, the questions we had for our project evolved as we worked to join and analyze data. Here are some select summaries and visualizations of our data (more can be found in the analyses subsections.
 
 ```{r}
 # Note- will need to put the data cleaning code here as well and make sure the file paths are all correct
@@ -48,14 +48,6 @@ As stated earlier, the questions we had for our project evolved as we worked to 
 # trash
 
 # restaurants
-```
-
-
-## [Additional analysis](statistical.html)
-
-```{r}
-# not sure if we did any tbh, but could put the two linear models of the rat sightings here, though the conclusion is very weak
-
 ```
 
 
