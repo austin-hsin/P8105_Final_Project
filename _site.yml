@@ -34,7 +34,7 @@ navbar:
     - text: "About Us"
       href: about.html
     - icon: fa-github fa-lg
-      href: https://austin-hsin.github.io/P8105_Final_Project/
+      href: https://austin-hsin.github.com/P8105_Final_Project.git
       
 output:
   html_document:
