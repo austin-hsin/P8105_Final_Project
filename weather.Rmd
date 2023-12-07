@@ -1,9 +1,8 @@
 ---
-title: "Weather"
+title: "Rats & Weather Analysis"
 output: github_document
 ---
 
-Load libraries
 ```{r}
 library(tidyverse)
 library(ggplot2)
@@ -11,7 +10,6 @@ library(plotly)
 
 ```
 
-Load rat data
 ```{r}
 sightings = read_csv('data/NYC_Rat_Sightings.csv') |> 
   janitor::clean_names() |> 
@@ -23,8 +21,6 @@ sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
   select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |> select(unique_key, date, year, month, day, everything())
 ```
 
-
-Load weather data
 ```{r}
 weather_df = rnoaa::meteo_pull_monitors(
     c("USW00094728"),
@@ -38,8 +34,6 @@ weather_df = rnoaa::meteo_pull_monitors(
   select(name, id, everything())
 ```
 
-
-Merge weather and rat data
 ```{r}
 sightings$date <- as.Date(as.character(sightings$date), format = "%Y%m%d")
 
@@ -47,49 +41,11 @@ rat_weather =
   right_join(sightings, weather_df, by="date")
 ```
 
-Other interesting variables to explore as they relate to rat sightings include weather conditions. Specifically, temperature and precipitation can impact rat behavior and movement. Rats may be more active during certain weather conditions, seeking shelter or food. Understanding how weather conditions influence rat behavior can help identify high-risk periods for increased rat activity. Policy-makers such as the Rat Czar can use this information to allocate resources and implement targeted interventions during these times. Moreover, as climate change leads to shift in weather patterns, it will become even more important to adapt rat-control strategies to changing environmental conditions. 
+Temperature and precipitation will likely impact rat behavior and movement. Rats may be more active during certain weather conditions, seeking shelter or food. Understanding how weather conditions influence rat behavior can help identify high-risk periods for increased rat activity. Policy-makers such as the Rat Czar can use this information to allocate resources and implement targeted interventions during these times. Moreover, as climate change leads to shift in weather patterns, it will become even more important to adapt rat-control strategies to changing environmental conditions.
 
-Rat sightings by latitude and longitude
+First, we'll see how amount of precipitation is associated with number of rat sightings.
+
 ```{r}
-rat_weather |>
-  sample_n(10000) |>
-  plot_ly(x = ~longitude, y = ~latitude, type = "scatter", mode = "markers",
-        color = ~borough, colors = c("blue", "red", "green", "purple", "orange")) |> 
-  layout(title = "Rat Sightings by Latitude and Longitude",
-         xaxis = list(title = "Longitude"),
-         yaxis = list(title = "Latitude"))
-
-
-
-rat_weather |>
-  filter(borough == "MANHATTAN") |>
-  sample_n(10000) |> 
-  plot_ly(x = ~longitude, y = ~latitude, type = "scatter", mode = "markers",
-        color = ~tmax, alpha=0.8) |>
-  layout(title = "Rat Sightings by Latitude, Longitude, and Maximum Temperature",
-         xaxis = list(title = "Longitude"),
-         yaxis = list(title = "Latitude"))
-```
-The above plot shows a random sample of 10,000 rat sightings in Manhattan from 2017-2022. The plot points are colored according to maximum temperature during each rat sighting. From this plot, we can gather that the majority of rat sightings occur in the upper half of Manhattan, as the dots are much more densely packed in that area, and that most sightings occur during higher temperatures. 
-
-
-Rat sightings per day
-```{r}
-rat_weather |>
-  mutate(year = as.factor(year)) |>
-  group_by(date) |>
-  summarize(count = n(), year) |>  
-  ggplot(aes(x = date, y = count, color=year)) +
-  geom_point(alpha = 0.25) + 
-  labs(title = "Time Series: Rat Sightings Over Time",
-       x = "Date",
-       y = "Number of Rat Sightings")
-```
-
-
-Rat sightings versus precipitation
-```{r}
-
 rat_weather |>
   filter(prcp != 1811) |>
   mutate(prcp = as.factor(prcp)) |>
@@ -104,11 +60,11 @@ rat_weather |>
   labs(title = "Scatter Plot: Precipitation vs. Rat Sightings",
        x = "Precipitation (inches)",
        y = "Number of Rat Sightings")
-
 ```
-In this plot we can see an inverse relationship between precipitation and rat sightings. This could mean that rats are less active during periods of rain, potentially preferring to stay in sheltered areas, or that people are also less likely to go outside during times of high precipitation, leading them to not see as many rats. 
 
-by year
+In this plot we can see an inverse relationship between precipitation and rat sightings. This could mean that rats are less active during periods of rain, potentially preferring to stay in sheltered areas, or simply that  people are less likely to go outside during times of high precipitation, leading them to not report as many rat sightings. 
+
+Next, let's see how number of rat sightings changes with maximum temperature.
 ```{r}
 rat_weather |>
   group_by(date) |>
@@ -120,26 +76,8 @@ rat_weather |>
   labs(title = "Maximum Temperature vs. Rat Sightings by Year",
        x = "Maximum temperature (degrees Celsius)",
        y = "Number of Rat Sightings")
-
-
-
 ```
 
-
- by month
-```{r}
-rat_weather |>
-  group_by(month) |>
-  summarize(count = n(), month, tmax) |>
-  ggplot(aes(x = tmax, y = count, color = month)) + 
-  geom_point(alpha = .3) +
-  geom_smooth(se = FALSE) + 
-  facet_grid(. ~ month) +
-  labs(title = "Maximum Temperature vs. Rat Sightings by Month",
-       x = "Maximum temperature (degrees Celsius)",
-       y = "Number of Rat Sightings")
-
-```
-The two above plots shows the number of rat sightings against maximum temperature, first faceted by year, and then by month. Overall, we see an increase in number of rat sightings over the year, as well as a peak in number of sightings around 25 degrees Celsius. This provides evidence for increased pest-control interventions during the warmer months, and an even greater concern for increased temperatures caused by climate change.
+In the above graph, we see an overall increase in number of rat sightings over the years, with annual peaks in number of sightings at ~25 degrees Celsius. This provides evidence of the need for increased pest-control interventions during the warmer months, and an even greater concern due to increasing temperatures caused by climate change.
 
  
