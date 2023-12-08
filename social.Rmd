@@ -15,7 +15,7 @@ library(choroplethr)
 library(choroplethrMaps)
 
 knitr::opts_chunk$set(
-	echo = TRUE,
+	echo = FALSE,
 	warning = FALSE,
   fig.width = 6,
   fig.asp = .6,

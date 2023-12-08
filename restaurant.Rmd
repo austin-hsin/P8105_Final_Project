@@ -99,5 +99,3 @@ violations_plot_df |>
 ```
 
 From the plot we can see that the bottom 18 cuisine types, left to right, trend upward steadily and range from 50 to 125 total violations. Then we see the top 2 cuisine types, Chinese and American, where the skyrockets to around 300 total violations. While this plot is not reflective of individual restaurants of these cuisine categories, it does help increase the weight of potential lower sanitation scores at such restaurants.
-
-Finally, we wanted to 

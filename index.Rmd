@@ -11,13 +11,47 @@ output:
 Welcome to our final project for Fall 2023's P8105 class! This project will take you through recent NYC data on rats and more- maybe you will learn something to avoid these furry foes.
 
 ## Welcome!
-To make a long story short, we're interested in finding out if the rats really do run this city. Through our research, data tidying, analyses, and conclusions, we've tried to answer the question. Check out the rest of the website to see if you agree!
+
+Through our research, data tidying, analyses, and conclusions, we've tried to answer the question: Who rules NYC: the Rat King, or the Rat Czar?
 
 <img src="pics/rat-bg.png" width="560">
-
 
 ## Screencast
 This short screencast lays out what information is on our website and walks through how to navigate the site.
 
 `r #can update this later with the direct embed code from youtube video`
 <iframe width="560" height="315" src="https://www.youtube.com/embed/cosTXRzBb0E" title="How NYC Became a Rat Kingdom 🐀" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+
+## Motivation and Related Work
+Rats are a common city problem, and recent estimates say that there are around [3 million rats](https://pix11.com/news/morning/city-rat-population-reaches-3-million-pest-control-company-claims/) in NYC alone. In fact, NYC is kind of iconic for its rats. As [NY Mag](https://nymag.com/news/features/rats-2011-11/) stated in 2011,<br>
+
+<big><center>**"Humans and rats are inextricably linked by time and space."**
+</big></center><br>
+
+
+Of course, COVID-19 didn't help, as people were quarantined inside, allowing the [rat problem to grow](https://english.elpais.com/usa/2022-06-13/the-rat-scourge-tarnishing-new-yorks-image-and-post-covid-recovery.html).
+
+
+<br>A viral soundbite even spread throughout the internet late last year:
+
+<center><big>**"The rats are absolutely going to _hate_ this announcement. [But the rats don't run this city, we do.](https://www.npr.org/2022/10/19/1130026635/new-york-is-fighting-rats-in-the-streets)"**</big></center>
+
+This was NYC Sanitation Commissioner Jessica Tisch's statement before the announcement that starting in April 2023, New Yorkers would no longer be allowed to trash outside until after 8pm.
+
+<br>And who can forget the hilarious public health campaign? <br>
+<big><center>**["Send rats packing!"](https://www.nyc.gov/assets/queenscb2/downloads/pdf/notices/2023/SetoutTimes-Residential-Flyer-2023-02.pdf)**, </big></center>
+
+they said, along with graphic illustrations of rats posted on trash cans around the city.
+<p><br>
+
+**In light of this, and in honor of the [Rat Czar](https://www.nyc.gov/office-of-the-mayor/news/249-23/mayor-adams-anoints-kathleen-corradi-nyc-s-first-ever-rat-czar-) being crowned that same month, we sought to answer this age-old question: who runs this city? The rats, or the people?**
+<p>
+
+## More to explore
+Here are some links we perused while brainstorming for our project.
+
+* [Pizza rat](https://www.theguardian.com/world/video/2015/sep/21/pizza-rat-new-york-subway-video)
+* [Buddy the Rat](https://untappedcities.com/2023/08/03/buddy-the-rat-tiktok/)
+* [Uptown Rat](https://www.tiktok.com/@justasmallbird/video/7304051573041188127?_r=1&_t=8huZVoS7dOt)
+* [NYC Subway Rat Detector](https://transitapp.com/rats)

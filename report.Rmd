@@ -23,19 +23,19 @@ Since we were interested in the scope of the rat problem, our initial questions 
 As we tided and joined data, we realized the Rat Czar is so new that there isn't much information about her statutes yet. So new questions arose:
 
 * How are rat sightings related to other conditions in NYC?
-* How are sociodemographic factors, weather conditions, trash density, and restaurant inspections related to rat sightings?
+* Specifically, how might sociodemographic factors, weather conditions, trash density, and restaurant inspections be related to rat sightings?
 * What does the Rat Czar need to focus on to win the war against rats?
 
-## [Data](data_sources.html)
+## Data
 
 Data was taken majorly from [NYC Open Data](https://opendata.cityofnewyork.us/), [Census data](https://www.census.gov/data.html), and [NOAA](https://www.ncei.noaa.gov/cdo-web/datasets).
 
 Data was either imported from csv or scraped from the web, tidied with the usual `dplyr` functions, and joined by variables like `r # need to fill this in - probably stuff like county, year, month, etc, but need to check Rmds`
 
-More information about the data tidying process is found [here](data-sources.html).
+More information about the data sources are found [here](data_sources.html) and the data cleaning process is documented [here](data_overview.html).
 
 ## [Analyses](visualization.html)
-As stated earlier, the questions we had for our project evolved as we worked to join and analyze data. Here are some select summaries and visualizations of our data (more can be found in the analyses subsections.
+As stated earlier, the questions we had for our project evolved as we worked to join and analyze data. Here are some select summaries and visualizations of our data (more can be found in the analyses subsections). 
 
 ```{r}
 # Note- will need to put the data cleaning code here as well and make sure the file paths are all correct
