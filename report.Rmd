@@ -6,12 +6,12 @@ output:
     toc_float: true
     code_folding: hide
 ---
-This report gives an overview of our project process, results, and thoughts.
+This report gives a comprehensive overview of our project process, results, and thoughts.
 
-## [Motivation and Related Work](intro.html)
-When brainstorming for this project, our group members found ourselves drawn towards understanding NYC rats. Since rats are likely related to various other determinants of health, as Mailman students who study, live, or work in New York City, we were interested in figuring out the scope of the problem.
+## Motivation and Related Work
+As reflected on our home page, when brainstorming for this project, our group members found ourselves drawn towards understanding NYC rats. Since rats are likely related to various determinants of health, as Mailman students who study, live, or work in New York City, we were interested in figuring out the scope of the problem.
 
-News reports about rats in NYC, laws passed about rodent mitigation, trending articles about rat spottings, and more inspired us to go ahead with this topic.
+News reports about rats in NYC, laws passed about rodent mitigation and the coronation of the Rat Czar in April 2023, trending articles about rat spottings, viral media about rats, and more inspired us to go ahead with this topic.
 
 ## Initial Questions
 Since we were interested in the scope of the rat problem, our initial questions were:

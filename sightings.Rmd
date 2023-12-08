@@ -52,7 +52,7 @@ rat_weather =
 
 ## Descriptive Analyses
 
-Let's first see how the number of rat sightings in NYC have changed over time. We can see that sightings went up drastically since 2020, when the rat populations were able to thrive as people were quarantined inside.
+Let's first see how the number of rat sightings in NYC have changed over time. We know that rats are ubiquitous in NYC already, and that COVID-19 quarantines may have caused them to explode in population.
 
 ```{r}
 sightings |> group_by(year) |>
@@ -60,7 +60,9 @@ sightings |> group_by(year) |>
   plot_ly(x=~year, y=~count, type="scatter", mode="line") |> layout(title = "Rat Sightings over Time", xaxis=list(title="Year"), yaxis=list(title="Number of Rat Sightings"))
 ```
 
-And if we look by time of year, we find that in each year May through October have the highest count of rat sightings.
+We can see that sightings went up drastically since 2020, when the rat populations were able to thrive as people were quarantined inside. They appear to be going down after 2022, but that could reflect incomplete data for this year, as the rat sightings data ranged from January 1, 2016 to October 31, 2023. 
+
+What about time of year?
 
 ```{r, message = FALSE}
 sightings |> 
@@ -69,8 +71,9 @@ sightings |>
   ggplot(aes(x=month, y=count, color=year, group=year)) + geom_line() 
 ```
 
+This plot shows that the period May through October has the highest count of rat sightings.
 
-A time-series shows that this is an annual pattern and that the number of rat sightings has increased over time. 
+A time-series shows this data in another format, confirming that the shape of the curve is an annual pattern. The increase in rat sightings is also seen here with the rat sightings distributions becoming taller after 2020. 
 
 ```{r, message = FALSE, warning = FALSE}
 rat_weather |>
@@ -84,7 +87,7 @@ rat_weather |>
        y = "Number of Rat Sightings")
 ```
 
-Let's further break down these trends by borough:
+Let's further break down these trends by borough. 
 
 ```{r, message = FALSE}
 sightings |> 
@@ -93,9 +96,9 @@ sightings |>
   plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line") |> layout(title = "Rat Sightings by Borough", xaxis=list(title="Year"), yaxis=list(title="Number of Rat Sightings"))
 ```
 
-There is a drastic increase in number of rat sightings after 2020 across all boroughs except Staten Island which started to decrease this year. Brooklyn and Manhattan had the most cases overall. However, this data only covers rat sightings until October 31, 2023, so this is not representative of the entire year of 2023.
+All boroughs saw the increase in rat sightings after 2020 except Staten Island, which looks fairly stable. Brooklyn and Manhattan had the most cases overall, which could be due to population or surface area. 
 
-Lastly, looking at relative density by longitude and latitude:
+Lastly, we explored a random sample of 10,000 rat sightings by longitude and latitude.
 
 ```{r, message = FALSE, warning = FALSE}
 rat_weather |>
@@ -107,11 +110,14 @@ rat_weather |>
          yaxis = list(title = "Latitude"))
 ```
 
-Areas with more rat sightings appear to be parts of upper Manhattan, west Brooklyn, and the Bronx.
+Although this sample is subject to sampling error, we see that areas with more rat sightings are clustered in upper Manhattan, the Bronx, and west Brooklyn. 
+
 
 ## Statistical Analyses
 
 In April 2023, a "Rat Czar" was appointed to tackle the problem of rat presence across the city. Let's map the number of rat sightings and the linear regression in the 6 months pre vs. post-appointment.
+
+The red line indicates the month in which the Rat Czar was appointed.
 
 ```{r, message = FALSE, echo=FALSE}
 # looking at rat czar effects
@@ -137,7 +143,9 @@ rat_czar |>
        y = "Number of Rat Sightings")
 ```
 
-The red line indicates when the Rat Czar was appointed. We are interested in the slopes of the 6 months before and 6 months after:
+The monthly counts of rat sightings show what appears to be an increase in sightings after the Rat Czar, but we are unsure of its significance.
+
+Thus, we examined the slopes of the 6 months before and 6 months after the Rat Czar's appointment. First we looked at the slope of the 6 months before April 2023.
 
 ```{r prereg, echo=FALSE, warning=FALSE}
 # linear regression before and after
@@ -162,7 +170,9 @@ czar_before |>
   lm(count~months, data=_) |> broom::tidy() |> knitr::kable()
 ```
 
-The slope of rat sightings in the months pre-appointment is increasing, but not significant. What about the 6 months after?
+The slope of rat sightings in the months pre-appointment is increasing, but not significant. 
+
+Then, we looked at the slope of the rat sightings for the 6 months after April 2023.
 
 ```{r postreg, echo=FALSE, warning=FALSE}
 czar_after = rat_czar |> filter(month_year %in% c("04_2023","05_2023","06_2023", "07_2023", "08_2023", "09_2023", "10_2023")) |>
@@ -185,5 +195,5 @@ czar_after |>
   lm(count~months, data=_) |> broom::tidy() |> knitr::kable()
 ```
 
-While we find that there are changes in the slope post-appointment, they are not statistically significant. As such, it seems like there are probably a number of other factors associated with rat sightings.
+Now the slope is decreasing, but not signficant. The model does not really seem to be a good fit for the data and is not super informative. As such, it seems like there are probably a number of other factors associated with rat sightings.
 

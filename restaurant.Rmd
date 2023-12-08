@@ -11,6 +11,7 @@ library(tidyverse)
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
+	message= FALSE,
   fig.width = 6,
   fig.asp = .6,
   out.width = "90%"
@@ -56,7 +57,7 @@ violations_plot_df |>
     breaks = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023), 
     labels = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)) +
   labs(title = "04K Violations by Boro 2016-2023") +
-  xlab("Year")
+  xlab("Year") + ylab("Number of violations")
 ```
 
 From the plot, we can see that for the entire city, rat violations were not very common up until 2022 where the city saw a modest increase in 2021, but a massive leap into 2022. This parallels the trends found in the sightings analysis and may reflect a lack of appropriate surveillance/reporting on the city's part and the subsequent push for higher health standards following the Covid-19 pandemic.

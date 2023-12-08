@@ -6,14 +6,14 @@ output:
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 library(tidyverse)
 library(ggplot2)
 library(plotly)
 
 ```
 
-```{r include = FALSE}
+```{r import sightings, include = FALSE}
 sightings = read_csv('data/NYC_Rat_Sightings.csv') |> 
   janitor::clean_names() |> 
   separate(created_date, into=c("month","e", "day","f", "year", "g", "time"), sep=c(2,3,5,6,10,11)) |> 
@@ -24,7 +24,7 @@ sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
   select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |> select(unique_key, date, year, month, day, everything())
 ```
 
-```{r  message = FALSE}
+```{r weather import, include=FALSE}
 weather_df = rnoaa::meteo_pull_monitors(
     c("USW00094728"),
     var = c("PRCP", "TMIN", "TMAX"), 
@@ -37,7 +37,7 @@ weather_df = rnoaa::meteo_pull_monitors(
   select(name, id, everything())
 ```
 
-```{r  message = FALSE}
+```{r join data, include=FALSE}
 sightings$date <- as.Date(as.character(sightings$date), format = "%Y%m%d")
 
 rat_weather =
@@ -48,7 +48,7 @@ Temperature and precipitation will likely impact rat behavior and movement. Rats
 
 First, we'll see how amount of precipitation is associated with number of rat sightings.
 
-```{r message = FALSE}
+```{r precip}
 rat_weather |>
   filter(prcp != 1811) |>
   mutate(prcp = as.factor(prcp)) |>
@@ -68,7 +68,7 @@ rat_weather |>
 In this plot we can see an inverse relationship between precipitation and rat sightings. This could mean that rats are less active during periods of rain, potentially preferring to stay in sheltered areas, or simply that  people are less likely to go outside during times of high precipitation, leading them to not report as many rat sightings. 
 
 Next, let's see how number of rat sightings changes with maximum temperature.
-```{r warning = FALSE, message = FALSE}
+```{r maxtemp}
 rat_weather |>
   group_by(date) |>
   summarize(count = n(), year, tmax) |>

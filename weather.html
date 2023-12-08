@@ -342,20 +342,6 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>weather_df = rnoaa::meteo_pull_monitors(
-    c(&quot;USW00094728&quot;),
-    var = c(&quot;PRCP&quot;, &quot;TMIN&quot;, &quot;TMAX&quot;), 
-    date_min = &quot;2016-01-01&quot;,
-    date_max = &quot;2022-12-31&quot;) |&gt;
-  mutate(
-    name = recode(id, USW00094728 = &quot;CentralPark_NY&quot;),
-    tmin = tmin / 10,
-    tmax = tmax / 10) |&gt;
-  select(name, id, everything())</code></pre>
-<pre class="r"><code>sightings$date &lt;- as.Date(as.character(sightings$date), format = &quot;%Y%m%d&quot;)
-
-rat_weather =
-  right_join(sightings, weather_df, by=&quot;date&quot;)</code></pre>
 <p>Temperature and precipitation will likely impact rat behavior and
 movement. Rats may be more active during certain weather conditions,
 seeking shelter or food. Understanding how weather conditions influence
@@ -381,7 +367,7 @@ number of rat sightings.</p>
   labs(title = &quot;Scatter Plot: Precipitation vs. Rat Sightings&quot;,
        x = &quot;Precipitation (inches)&quot;,
        y = &quot;Number of Rat Sightings&quot;)</code></pre>
-<p><img src="weather_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="weather_files/figure-html/precip-1.png" width="672" /></p>
 <p>In this plot we can see an inverse relationship between precipitation
 and rat sightings. This could mean that rats are less active during
 periods of rain, potentially preferring to stay in sheltered areas, or
@@ -399,7 +385,7 @@ temperature.</p>
   labs(title = &quot;Maximum Temperature vs. Rat Sightings by Year&quot;,
        x = &quot;Maximum temperature (degrees Celsius)&quot;,
        y = &quot;Number of Rat Sightings&quot;)</code></pre>
-<p><img src="weather_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="weather_files/figure-html/maxtemp-1.png" width="672" /></p>
 <p>In the above graph, we see an overall increase in number of rat
 sightings over the years, with annual peaks in number of sightings at
 ~25 degrees Celsius. This provides evidence of the need for increased

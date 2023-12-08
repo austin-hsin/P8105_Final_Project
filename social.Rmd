@@ -15,8 +15,9 @@ library(choroplethr)
 library(choroplethrMaps)
 
 knitr::opts_chunk$set(
-	echo = FALSE,
+	echo = TRUE,
 	warning = FALSE,
+	message= FALSE,
   fig.width = 6,
   fig.asp = .6,
   out.width = "90%"
@@ -33,11 +34,11 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-#### **Crowding data**
+We were interested in several variables available in census data: crowding, education, poverty, and vacancy. These factors are likely related to rat sightings because they are associated with social, environmental, and economic conditions.
 
-Crowded households may promote an environment that promotes the nesting of rats due to increased garbage or unhygienic behaviors. There may also be increased sightings of rats in these households because there are more people able to spot them.
+1. Crowding: Crowded households may promote an environment that promotes the nesting of rats due to increased garbage or unhygienic behaviors. There may also be increased sightings of rats in these households because there are more people able to spot them.
 
-```{r, message=FALSE}
+```{r crowding, include=FALSE}
 crowding18 =
   read_csv("data/crowding/2018_crowding.csv", col_names = TRUE) |> 
   janitor::clean_names() |> 
@@ -131,11 +132,9 @@ crowding_all =
                        " New York County"))
 ```
 
-#### **Education Level Data**
+2. Education: Prior research in other cities has shown an association between low education and increased rat sightings. We hypothesized that individuals with lower education may be unable to access newly renovated or well-maintained housing units. As a result, they may be more likely to come into contact with rats or live in areas that have a large rat population.
 
-Prior research in other cities has shown an association between low education and increased rat sightings. We hypothesized that individuals with lower education may be unable to access newly renovated or well-maintained housing units. As a result, they may be more likely to come into contact with rats or live in areas that have a large rat population.
-
-```{r, message=FALSE}
+```{r educ, include=FALSE}
 edu18 =
   read_csv("data/edu/edu_2018.csv", col_names = TRUE) |> 
   janitor::clean_names() |> 
@@ -249,11 +248,9 @@ edu_all =
                        " New York County"))
 ```
 
-#### **Poverty Data**
+3. Poverty: Lower-income areas might have fewer resources for building maintenance and rodent control which in turn creates an environment that can sustain the rat population. On the other hand, higher-income areas might be more likely to report rat sightings.
 
-Lower-income areas might have fewer resources for building maintenance and rodent control which in turn creates an environment that can sustain the rat population. On the other hand, higher-income areas might be more likely to report rat sightings.
-
-```{r, message=FALSE}
+```{r poverty, include=FALSE}
 poverty18 =
   read_csv("data/poverty/2018_poverty.csv", col_names = TRUE) |> 
   janitor::clean_names() |> 
@@ -315,11 +312,9 @@ poverty_all =
                        " New York County"))
 ```
 
-#### **Vacancy Data**
+4. Vacancy: Empty households can be conducive to supporting the rat population since with no people actively living there, there is no one reporting the rats or attempting to control the size of the population. It allows the rats to nest and hide away from severe environmental conditions (rain, snow) and predators.
 
-Empty households can be conducive to supporting the rat population since with no people actively living there, there is no one reporting the rats or attempting to control the size of the population. It allows the rats to nest and hide away from severe environmental conditions (rain, snow) and predators.
-
-```{r, message=FALSE}
+```{r vacancy, include=FALSE}
 vacancy18 =
   read_csv("data/vacancy/2018_vacancy.csv", col_names = TRUE) |> 
   janitor::clean_names() |> 
@@ -387,12 +382,11 @@ vacancy_all =
 
 In general, we might be losing information with the variables chosen for analysis. During data collection, the variables were further subsetted into age groups and race/ethnicity designations. However for this analysis, the general estimates were taken for the population as a whole in NYC, therefore we did not analyze any potential disparities between race or age groups.
 
-Time Series Plots:
--------------------
+## Time Series Plots
 
 #### **Crowding**
 
-```{r}
+```{r crowdingtime}
 crowding_time = crowding_all |> 
   pivot_longer(less_than_1_y18:more_prop_y21,
                names_to = "occupancy",
@@ -426,7 +420,7 @@ Over the observed years in the dataset, New York County (Manhattan) appeared to 
 
 #### **Education Level**
 
-```{r}
+```{r eductime}
 edu_time = edu_all |> 
   pivot_longer(less_9_y18:college_y21,
                names_to = "education_level",
@@ -460,7 +454,7 @@ Over the observed years in the dataset, all of the counties, except Richmond (St
 
 #### **Poverty**
 
-```{r}
+```{r povtime}
 poverty_time = poverty_all |> 
   pivot_longer(below_poverty_y18:prop_poverty_y21,
                names_to = "poverty_level",
@@ -494,7 +488,7 @@ Over the observed years in the dataset, all of the counties had a decrease in th
 
 #### **Vacancy**
 
-```{r}
+```{r vactime}
 vacancy_time = vacancy_all |> 
   pivot_longer(total_home_y18:prop_vacant_y21,
                names_to = "vacancy",
@@ -526,10 +520,10 @@ vacancy_time
 
 Over the observed years in the dataset, Bronx and Richmond (Staten Island) County dipped during 2020 and then increased again in the average proportion of vacant properties at the end of 2021. On the other hand, Queens, Kings (Brooklyn), and New York (Manhattan) County peaked during 2020, and then decreased in the average proportion of vacant properties at the end of 2021. Overall, Queens County had the highest average proportion, 0.503, of vacant properties for residential purposes at the end of 2021 while New York (Manhattan) County had the lowest (0.242).
 
-Rat Sighting Distribution by Borough:
-----------------------------------------
+## Rat Sightings by Borough
+To expand upon the rat sightings and borough data, we looked at the density of rat sightings and compared it to some of our socioeconomic variables of interest. 
 
-```{r}
+```{r sightings, include=FALSE}
 sightings = read_csv('data/NYC_Rat_Sightings.csv') |> 
   janitor::clean_names() |> 
   separate(created_date, into=c("month","e","day","f","year","g","time"), sep=c(2,3,5,6,10,11)) |> 
@@ -544,7 +538,7 @@ sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
   select(unique_key, date, year, month, day, everything()) 
 ```
 
-*deepness of color shows density of counts*
+The deepness of the color shows the density of rat sightings.
 
 **Bronx**
 
@@ -611,10 +605,9 @@ sightings |>
           marker=list(color="darkblue",size=2,opacity=0.5))
 ```
 
-Choropleth Maps by Borough:
-----------------------------
+## Choropleth Maps by Borough
 
-I compared the rat density plots by borough with the choropleth maps for the various SES variables. I focused on the borough with the highest and lowest average proportion (as shown in the time series plots) to see if there were any significant differences when looking at the rat sighting distributions.
+Lastly, we compared the rat density plots by borough with the choropleth maps for the various SES variables. We focused on the borough with the highest and lowest average proportion (as shown in the time series plots) to see if there were any significant differences when looking at the rat sighting distributions.
 
 #### **Crowding:**  
 Bronx (highest),  Richmond (lowest)

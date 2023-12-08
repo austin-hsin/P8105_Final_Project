@@ -8,7 +8,7 @@ output:
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(lubridate)
-knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
+knitr::opts_chunk$set(collapse = TRUE, message = FALSE, warning=FALSE, echo=TRUE)
 
 
 knitr::opts_chunk$set(
@@ -60,7 +60,7 @@ waste_2 = waste |>
   group_by(year, month, borough, type, tons)
 ```
 
-```{r clean sightings data, message = FALSE}
+```{r clean sightings data, include=FALSE}
 sightings <-
   read_csv('data/NYC_Rat_Sightings.csv') |> 
   janitor::clean_names() |> 
@@ -78,7 +78,7 @@ sightings <-
   summarize(ratcount = n()) 
 ```
 
-```{r merge datasets}
+```{r merge datasets, include=FALSE}
 merged = inner_join(waste_2, sightings, 
             by = c("year", "month", "borough")) |> 
   mutate(tons = as.numeric(tons)) |> 
@@ -105,14 +105,19 @@ ggplot(merged_tons, aes(x=combined_ym, y = total_tons, color = borough, group = 
          caption = "Data from DSNY Monthly Tonnage Data") 
 ```
 
-Now, let's add in rat count to this graph.
+Brooklyn and Queens have the most trash while Staten Island has the least. This likely corresponds to population density. There are also annual trends with more trash being produced in the middle months of the years and the least amount produced in the first few months of the year.
+
+Now, let's look at total trash and number of rat counts.
 ```{r plotly rats by neighborhood}
 merged_tons |>
   mutate(text_label = str_c("Number of Rats: ", ratcount, "\nTons of Trash: ", total_tons)) |> 
   plot_ly(
     y = ~ratcount, x = ~total_tons, type = "scatter", mode = "markers",
-    color = ~borough, text = ~text_label, alpha = 0.5)
+    color = ~borough, text = ~text_label, alpha = 0.5) |> 
+  layout(title = "Total Tons of Trash and Rat Count", xaxis=list(title="Total Tons"), yaxis=list(title="Rat Count")) 
 ```
+
+There seems to be a tri-modal distribution, with Staten Island producing the least amount of trash with the fewest number of rat sightings, Manhattan and the Bronx in the mid-range, and Queens and Brooklyn producing both the most trash and having the most rat sightings.
 
 Lastly, we'll look to see if there is any relationship between type of waste and rat count.
 ```{r plot type of waste vs. rat count}
@@ -126,4 +131,4 @@ ggplot(merged, aes(x = ratcount, y = tons, color = type)) +
        caption = "Data from NYC Open Data and DSNY Monthly Tonnage Data")  
 ```
 
-
+While there is not much information on sub-categories of refuse, it's possible that the three clusters seen in this graph correlate with the tri-modal distribution from the previous visualization. The three clusters also appear to have increasing trends, with higher rat counts being slightly associated with higher total tons of refuse. MGP (metal, glass, plastic) and paper trash on the other hand do not seem to be associated with rat count as there is no defined distribution or trend. 
