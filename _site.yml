@@ -11,7 +11,7 @@ navbar:
       menu:
         - text: "Data Sources"
           href: data_sources.html
-        - text: "Data Overview"
+        - text: "Data Cleaning"
           href: data_overview.html
     - text: "Analyses"
       menu:

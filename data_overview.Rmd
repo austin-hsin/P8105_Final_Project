@@ -6,4 +6,4 @@ output:
     toc_float: true
 ---
 
-This is where the data overview goes
+This is where the data cleaning/tidying goes.
