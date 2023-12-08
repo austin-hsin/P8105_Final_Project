@@ -4,9 +4,28 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
+
+Similar to the trash and sightings findings, we wanted to investigate whether NYC restaurant inspections, specifically health inspection violation code 04K, evidence of rats, would reveal greater insight into NYC's rat problem. 
 
 ```{r inspections_df}
 #Importing NYC Restaurant Inspections csv
@@ -17,9 +36,9 @@ inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
   filter(as.numeric(Year) > 2015)
 ```
 
-Using information regarding restaurant health inspection violation code 40K, evidence of rats, can also give us insight to the rat problem in NYC.
+First, we analyzed the trend of 04K violations in all 5 boroughs from 2016 to 2023.
 
-```{r violation plot}
+```{r violation plot trend}
 #Observations of violations
 violations_plot_df <- inspections_df |>
   group_by(Year, boro, violation_code) |>
@@ -33,21 +52,50 @@ violations_plot_df |>
   geom_line() +
   scale_x_continuous(
     breaks = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023), 
-    labels = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023))
+    labels = c(2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)) +
+  labs(title = "04K Violations by Boro 2016-2023") +
+  xlab("Year")
+```
 
+From the plot, we can see that for the entire city, rat violations were not very common up until 2022 where the city saw a modest increase in 2021, but a massive leap into 2022. This parallels the trends found in the sightings analysis and may reflect a lack of appropriate surveillance/reporting on the city's part and the subsequent push for higher health standards following the Covid-19 pandemic.
+
+Next, we investigated the number of rat violations to the number of other creature violations, "04L", "04M", and "04O" where "04L" is evidence of mice, "04M" is evidence of roaches, and "04O" is the presence of live animal(s), other than fish in tank or service animals.
+
+```{r 04 violation comparison}
 #Plotting 04K violations to other 04 violations
 violations_plot_df |>
   filter(violation_code %in% c("04K","04M","04L", "04O")) |>
-  ggplot(aes(x = violation_code), color = violation_code) +
-  geom_bar()
+  mutate(violation_code = recode(violation_code, "04K" = "Rats","04M" = "Roaches","04L" = "Mice", "04O" = "Other")) |>
+  ggplot(aes(x = violation_code, fill = violation_code)) +
+  geom_bar() +
+  labs(title = "Comparison of '04' NYC Restaurant Violation Codes 2016-2023") +
+  scale_x_discrete(limits = c("Mice", "Roaches", "Rats", "Other")) +
+  xlab("Restaurant Creature Violations") +
+  ylab("Number of Violations")
+```
 
+Interestingly enough, roach and mice violations have heavily outnumbered the number of rat violations and potentially undercuts the severity of NYC's perceived rat problems. However, given that rodents and roaches thrive in similar environments, it is possible that solutions for reducing rat populations may spillover in deterring mice and roach populations.
+
+Finally, we wanted to examine which types of restaurants had the most rat violations in NYC.
+
+```{r top 20 cuisine 04k violations}
 #Plotting 04K violations by cuisine type
 violations_plot_df |>
   filter(violation_code == "04K") |>
   group_by(cuisine_description) |>
   mutate(cuisine_obs = n()) |>
   filter(cuisine_obs > 25) |>
-  ggplot(aes(x = cuisine_description, y = cuisine_obs)) +
-  geom_point() +
-  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+  ggplot(aes(x = reorder(cuisine_description, cuisine_obs), 
+             y = cuisine_obs)) +
+  geom_point(aes(color = cuisine_description)) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+  labs(title = "Top 20 Rat Violation Offenders by Cuisine Type 2016-2023") +
+  theme(legend.position = 'none') +
+  xlab("Cuisine Type") +
+  ylab("Number of Rat Violations") +
+  scale_y_continuous(breaks = c(50, 100, 150, 200, 250, 300))
 ```
+
+From the plot we can see that the bottom 18 cuisine types, left to right, trend upward steadily and range from 50 to 125 total violations. Then we see the top 2 cuisine types, Chinese and American, where the skyrockets to around 300 total violations. While this plot is not reflective of individual restaurants of these cuisine categories, it does help increase the weight of potential lower sanitation scores at such restaurants.
+
+Finally, we wanted to 
