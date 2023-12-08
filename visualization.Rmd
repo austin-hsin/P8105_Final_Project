@@ -4,6 +4,7 @@ output:
   html_document:
     toc: true
     toc_float: true
+    code_folding: hide
 ---
 
 Below are highlights of our analyses and include what we believe to be our most important data plots:
