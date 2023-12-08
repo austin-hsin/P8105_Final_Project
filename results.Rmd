@@ -1,9 +1,11 @@
 ---
-title: "Results"
+title: "Results & Discussion"
 output: 
   html_document:
     toc: true
     toc_float: true
 ---
 
-This is where the results go.
+This is where the results/discussion go. In words, explain what we found. Do the rats really run the city?
+
+Also, explain potential impacts on policy or recommendations.

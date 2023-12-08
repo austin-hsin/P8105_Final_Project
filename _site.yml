@@ -29,7 +29,7 @@ navbar:
       menu:
         - text: "Data Visualization"
           href: visualization.html
-        - text: "Results"
+        - text: "Results/Discussion"
           href: results.html
     - text: "About Us"
       href: about.html
