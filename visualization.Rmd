@@ -70,7 +70,6 @@ rat_weather |>
 ```
 
 ```{r borough}
-# total count per year by borough - most in brooklyn and manhattan
 sightings |> 
   group_by(year, borough) |> 
   summarize(count=n()) |> 
