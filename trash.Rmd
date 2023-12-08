@@ -117,7 +117,7 @@ merged_tons |>
   layout(title = "Total Tons of Trash and Rat Count", xaxis=list(title="Total Tons"), yaxis=list(title="Rat Count")) 
 ```
 
-There seems to be a tri-modal distribution, with Staten Island producing the least amount of trash with the fewest number of rat sightings, Manhattan and the Bronx in the mid-range, and Queens and Brooklyn producing both the most trash and having the most rat sightings.
+There is a positive linear trend between tons and rat count, clustered by borough, with Staten Island producing the least amount of trash with the fewest number of rat sightings, Manhattan and the Bronx in the mid-range, and Queens and Brooklyn producing both the most trash and having the most rat sightings.
 
 Lastly, we'll look to see if there is any relationship between type of waste and rat count.
 ```{r plot type of waste vs. rat count}
@@ -131,4 +131,4 @@ ggplot(merged, aes(x = ratcount, y = tons, color = type)) +
        caption = "Data from NYC Open Data and DSNY Monthly Tonnage Data")  
 ```
 
-While there is not much information on sub-categories of refuse, it's possible that the three clusters seen in this graph correlate with the tri-modal distribution from the previous visualization. The three clusters also appear to have increasing trends, with higher rat counts being slightly associated with higher total tons of refuse. MGP (metal, glass, plastic) and paper trash on the other hand do not seem to be associated with rat count as there is no defined distribution or trend. 
+While there is not much information on sub-categories of refuse, it's possible that the three clusters seen in this graph correlate with the trends from the previous visualization. The three clusters also appear to have increasing trends, with higher rat counts being slightly associated with higher total tons of refuse. MGP (metal, glass, plastic) and paper trash on the other hand do not seem to be associated with rat count as there is no defined distribution or trend. 
