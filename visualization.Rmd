@@ -86,7 +86,46 @@ rat_weather |>
        y = "Number of Rat Sightings")
 ```
 
+Rat sightings & Trash
 
+
+Rat sightings & Restaurants
+
+```{r inspections_df}
+#Importing NYC Restaurant Inspections csv
+inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
+  janitor::clean_names() |>
+  separate(inspection_date, c("Month", "Day", "Year"), sep = "/") |>
+  select(-Day) |> #can remove other columns as needed
+  filter(as.numeric(Year) > 2015)
+```
+
+```{r violation plot trend}
+#Observations of violations
+violations_plot_df <- inspections_df |>
+  group_by(Year, boro, violation_code) |>
+  mutate(code_obs = n())
+```
+
+```{r top 20 cuisine 04k violations}
+#Plotting 04K violations by cuisine type
+violations_plot_df |>
+  filter(violation_code == "04K") |>
+  group_by(cuisine_description) |>
+  mutate(cuisine_obs = n()) |>
+  filter(cuisine_obs > 25) |>
+  ggplot(aes(x = reorder(cuisine_description, cuisine_obs), 
+             y = cuisine_obs)) +
+  geom_point(aes(color = cuisine_description)) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+  labs(title = "Top 20 Rat Violation Offenders by Cuisine Type 2016-2023") +
+  theme(legend.position = 'none') +
+  xlab("Cuisine Type") +
+  ylab("Number of Rat Violations") +
+  scale_y_continuous(breaks = c(50, 100, 150, 200, 250, 300))
+```
+
+Rat sightings & SES factors
 
 
 
