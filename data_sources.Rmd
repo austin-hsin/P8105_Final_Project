@@ -9,6 +9,7 @@ output:
 Information about the data sources we used in our analyses are documented here.
 
 ## Rat sightings data:
+This data was taken from the NYC Open Data website, adapted from a data set from 311 requests. The rat sightings were filtered out from the requests before the csv was imported to R. The data and time variables and location variables like longitude, latitude, and borough were kept. Observations were filtered to rat sightings between January 1, 2016 and October 31, 2023.
 
 ## Weather data:
 
