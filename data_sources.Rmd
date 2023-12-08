@@ -6,5 +6,15 @@ output:
     toc_float: true
 ---
 
-The data sources are documented here. We got our datasets from the following places:
+Information about the data sources we used in our analyses are documented here.
 
+## Rat sightings data:
+
+## Weather data:
+
+## Trash data:
+
+## Restaurant inspection data:
+
+## Socioeconomic factor data:
+The data source utilized for this component of the rat sightings analysis is from the U.S. Census Bureau. Variables associated with crowdingl, vacancy, education, and poverty were dowloaded from the site at the census tract level for the entire state of New York. The data was then filtered to only included counties that are a part of New York City (Bronx, Queens, Richmond, Kings, and New York), and then analyzed alongside the distribution of rat sightings across these counties.
