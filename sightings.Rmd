@@ -7,6 +7,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(plotly)
+library(lubridate)
+library(dplyr)
 ```
 
 ```{r rat sightings}
@@ -53,6 +55,40 @@ sightings |>
   plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line")
 ```
 
+Rat sightings by latitude and longitude
+```{r}
+weather_df = rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2016-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+```
+
+
+Merge weather and rat data
+```{r}
+sightings$date <- as.Date(as.character(sightings$date), format = "%Y%m%d")
+
+rat_weather =
+  right_join(sightings, weather_df, by="date")
+```
+
+```{r}
+rat_weather |>
+  sample_n(10000) |>
+  plot_ly(x = ~longitude, y = ~latitude, type = "scatter", mode = "markers",
+        color = ~borough, colors = c("blue", "red", "green", "purple", "orange")) |> 
+  layout(title = "Rat Sightings by Latitude and Longitude",
+         xaxis = list(title = "Longitude"),
+         yaxis = list(title = "Latitude"))
+```
+
+
 In April 2023, a "Rat Czar" was appointed to tackle the problem of rat presence across the city. Let's map the number of rat sightings and the linear regression in the 6 months pre vs. post-appointment.
 
 ```{r}
@@ -63,11 +99,15 @@ rat_czar = sightings |>
   summarize(count=n()) |>
   mutate(month_year = paste(month, year, sep="_"),
          month_year = as.factor(month_year)) 
+```
 
+```{prepost counts}
 # graph of counts per month, 6 months before and after coronation
 rat_czar |>
   ggplot(aes(x=month_year, y=count)) + geom_point() + geom_vline(xintercept="04_2023", color="red", linetype="dashed") + theme(axis.text.x=element_text(angle=90))
+```
 
+```{prereg}
 # linear regression before and after
 # 6 months before
 czar_before = rat_czar |> filter(month_year %in% c("10_2022","11_2022", "12_2022", "01_2023", "02_2023", "03_2023", "04_2023")) |>
@@ -78,13 +118,17 @@ czar_before = rat_czar |> filter(month_year %in% c("10_2022","11_2022", "12_2022
                          month_year ==  "02_2023" ~ 5,
                           month_year == "03_2023" ~ 6,
                          month_year == "04_2023" ~ 7)) 
+```
 
+```{before}
 czar_before |> ggplot(aes(x=months, y=count)) + geom_point() + geom_line()
 
 czar_before |>
   lm(count~months, data=_) |> broom::tidy() |> knitr::kable()
 # slope is increasing but NOT significant  (y= 1581.14 + 58.39x)
+```
 
+```{postreg}
 czar_after = rat_czar |> filter(month_year %in% c("04_2023","05_2023","06_2023", "07_2023", "08_2023", "09_2023", "10_2023")) |>
   mutate(months = case_when(month_year == "04_2023" ~ 1,
                             month_year == "05_2023" ~ 2,
