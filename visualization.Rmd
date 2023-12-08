@@ -72,7 +72,19 @@ sightings |>
   plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line")
 ```
 
-
+Rat sightings & Weather
+```{r}
+rat_weather |>
+  group_by(date) |>
+  summarize(count = n(), year, tmax) |>
+  ggplot(aes(x = tmax, y = count, color = year)) + 
+  geom_point(alpha = .3) +
+  geom_smooth(se = FALSE, color="black") + 
+  facet_grid(. ~ year) +
+  labs(title = "Maximum Temperature vs. Rat Sightings by Year",
+       x = "Maximum temperature (degrees Celsius)",
+       y = "Number of Rat Sightings")
+```
 
 
 
