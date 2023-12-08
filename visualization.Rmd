@@ -6,4 +6,4 @@ output:
     toc_float: true
 ---
 
-This is where the data visualization goes.
+Below are highlights of our analyses and include what we believe to be our most important data plots.
