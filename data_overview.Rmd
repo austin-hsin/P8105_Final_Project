@@ -7,3 +7,13 @@ output:
 ---
 
 This is where the data cleaning/tidying goes.
+
+## Rat Sightings
+```{r}
+# can take Lucia's initial code just for tidying, and not display results?
+```
+
+## etc
+```{r}
+# maybe describe some changes our team members made to rat sightings data to join it with other data
+```

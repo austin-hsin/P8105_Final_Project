@@ -6,15 +6,5 @@ output:
     toc_float: true
 ---
 
-The data sources and tidying methods are documented here.
-
-## Rat Sightings
-```{r}
-# can take Lucia's initial code just for tidying, and not display results?
-```
-
-## etc
-```{r}
-# maybe describe some changes our team members made to rat sightings data to join it with other data
-```
+The data sources are documented here. We got our datasets from the following places:
 
