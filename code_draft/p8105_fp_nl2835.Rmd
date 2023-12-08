@@ -37,7 +37,7 @@ Looking into rat sighting v waste data
 
 ```{r load and clean waste data}
 waste <-
-  read.csv("DSNY_Monthly_Tonnage_Data_20231202.csv") |> 
+  read.csv("data/DSNY_Monthly_Tonnage_Data_20231202.csv") |> 
   janitor::clean_names() |> 
   separate(month, into = c("year", "month"), sep = " / ") |>
   group_by(year, month, borough) |>
@@ -65,7 +65,7 @@ waste_2 = waste |>
 
 ```{r clean sightings data}
 sightings <-
-  read_csv('NYC_Rat_Sightings.csv') |> 
+  read_csv('data/NYC_Rat_Sightings.csv') |> 
   janitor::clean_names() |> 
   separate(created_date, into=c("month","e", "day","f", "year", "g", "time"), sep=c(2,3,5,6,10,11)) |> 
   select(-e,-f,-g) |> 
