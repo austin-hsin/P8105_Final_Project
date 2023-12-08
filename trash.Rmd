@@ -34,7 +34,7 @@ library(dplyr)
 library(plotly)
 ```
 
-```{r load and clean waste data}
+```{r load and clean waste data, include = FALSE}
 waste <-
   read.csv("data/DSNY_Monthly_Tonnage_Data_20231202.csv") |> 
   janitor::clean_names() |> 
@@ -49,7 +49,7 @@ waste <-
   mutate(across(where(is.character), trimws)) 
 ```
 
-```{r waste data - pivoted longer}
+```{r waste data - pivoted longer, include = FALSE}
 waste_2 = waste |> 
    pivot_longer(
     total_refuse:total_mgp, 
@@ -57,11 +57,10 @@ waste_2 = waste |>
     values_to = "tons") |> 
   mutate(type = substr(type, 7, 12),
          tons = as.numeric(tons)) |> 
-  group_by(year, month, borough, type, tons) 
-
+  group_by(year, month, borough, type, tons)
 ```
 
-```{r clean sightings data}
+```{r clean sightings data, message = FALSE}
 sightings <-
   read_csv('data/NYC_Rat_Sightings.csv') |> 
   janitor::clean_names() |> 

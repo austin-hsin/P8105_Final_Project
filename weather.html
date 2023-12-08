@@ -13,7 +13,7 @@
 
 <title>Rats &amp; Weather Analysis</title>
 
-<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
@@ -30,6 +30,7 @@
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
@@ -218,6 +219,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -323,6 +327,14 @@ $(document).ready(function () {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Rats &amp; Weather Analysis</h1>
@@ -330,54 +342,6 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.3     ✔ readr     2.1.4
-## ✔ forcats   1.0.0     ✔ stringr   1.5.0
-## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
-## ✔ purrr     1.0.2     
-## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<pre class="r"><code>library(ggplot2)
-library(plotly)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;plotly&#39;
-## 
-## The following object is masked from &#39;package:ggplot2&#39;:
-## 
-##     last_plot
-## 
-## The following object is masked from &#39;package:stats&#39;:
-## 
-##     filter
-## 
-## The following object is masked from &#39;package:graphics&#39;:
-## 
-##     layout</code></pre>
-<pre class="r"><code>sightings = read_csv(&#39;data/NYC_Rat_Sightings.csv&#39;) |&gt; 
-  janitor::clean_names() |&gt; 
-  separate(created_date, into=c(&quot;month&quot;,&quot;e&quot;, &quot;day&quot;,&quot;f&quot;, &quot;year&quot;, &quot;g&quot;, &quot;time&quot;), sep=c(2,3,5,6,10,11)) |&gt; 
-  select(-e,-f,-g) |&gt; 
-  mutate(date = paste(year, month, day, sep=&quot;&quot;), 
-         date = as.numeric(date)) |&gt;  
-  filter(date &lt;= 20231031, date &gt;= 20160101, !incident_zip &lt;= 10000, !incident_zip &gt;11697, !borough %in% c(&quot;Unspecified&quot;, NA)) |&gt; 
-  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |&gt; select(unique_key, date, year, month, day, everything())</code></pre>
-<pre><code>## Warning: One or more parsing issues, call `problems()` on your data frame for details,
-## e.g.:
-##   dat &lt;- vroom(...)
-##   problems(dat)</code></pre>
-<pre><code>## Rows: 232143 Columns: 38
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr (25): Created Date, Closed Date, Agency, Agency Name, Complaint Type, De...
-## dbl  (6): Unique Key, Incident Zip, X Coordinate (State Plane), Y Coordinate...
-## lgl  (7): Vehicle Type, Taxi Company Borough, Taxi Pick Up Location, Bridge ...
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>weather_df = rnoaa::meteo_pull_monitors(
     c(&quot;USW00094728&quot;),
     var = c(&quot;PRCP&quot;, &quot;TMIN&quot;, &quot;TMAX&quot;), 
@@ -388,12 +352,6 @@ library(plotly)</code></pre>
     tmin = tmin / 10,
     tmax = tmax / 10) |&gt;
   select(name, id, everything())</code></pre>
-<pre><code>## Registered S3 method overwritten by &#39;hoardr&#39;:
-##   method           from
-##   print.cache_info httr</code></pre>
-<pre><code>## using cached file: /Users/lizbekerman/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00094728.dly</code></pre>
-<pre><code>## date created (size, mb): 2023-12-02 11:00:44.015667 (8.544)</code></pre>
-<pre><code>## file min/max dates: 1869-01-01 / 2023-11-30</code></pre>
 <pre class="r"><code>sightings$date &lt;- as.Date(as.character(sightings$date), format = &quot;%Y%m%d&quot;)
 
 rat_weather =
@@ -423,8 +381,6 @@ number of rat sightings.</p>
   labs(title = &quot;Scatter Plot: Precipitation vs. Rat Sightings&quot;,
        x = &quot;Precipitation (inches)&quot;,
        y = &quot;Number of Rat Sightings&quot;)</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;date&#39;. You can override using the
-## `.groups` argument.</code></pre>
 <p><img src="weather_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <p>In this plot we can see an inverse relationship between precipitation
 and rat sightings. This could mean that rats are less active during
@@ -443,16 +399,6 @@ temperature.</p>
   labs(title = &quot;Maximum Temperature vs. Rat Sightings by Year&quot;,
        x = &quot;Maximum temperature (degrees Celsius)&quot;,
        y = &quot;Number of Rat Sightings&quot;)</code></pre>
-<pre><code>## Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in
-## dplyr 1.1.0.
-## ℹ Please use `reframe()` instead.
-## ℹ When switching from `summarise()` to `reframe()`, remember that `reframe()`
-##   always returns an ungrouped data frame and adjust accordingly.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-## generated.</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;date&#39;. You can override using the
-## `.groups` argument.
-## `geom_smooth()` using method = &#39;gam&#39; and formula = &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
 <p><img src="weather_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>In the above graph, we see an overall increase in number of rat
 sightings over the years, with annual peaks in number of sightings at
@@ -493,6 +439,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
