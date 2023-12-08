@@ -12,6 +12,8 @@ Information about the data sources we used in our analyses are documented here.
 This data was taken from the NYC Open Data website, adapted from a data set from 311 requests. The rat sightings were filtered out from the requests before the csv was imported to R. The data and time variables and location variables like longitude, latitude, and borough were kept. Observations were filtered to rat sightings between January 1, 2016 and October 31, 2023.
 
 ## Weather data:
+The data source used for this component of the analysis is from the National Oceanic and Atmospheric Administration (NOAA). Variables include data, precipitation, minimum temperature, and maximum temperature. The data was filtered to only include years 2017-2022 for New York City, and then merged by date with the rat sightings data.
+
 
 ## Trash data:
 The data source used for the trash vs. rat sighting analysis is NYC Open Data for both rat sightings and trash tonnage data. The trash tonnage data provides monthly collection tonnages that the NYC Department of Sanitation collects from NYC residences and institutions. Variables included `year`, `month`, `borough`, `refusetonscollected` (tons of trash or refuse collected), `papertonscollected` (tons of source-separated recyclable paper collected), and `mgptonscollected` (tons of source-separated recyclable metal, glass, plastic, and beverage cartons collected). The analyses describe the change in total tons of trash by borough, rat count by total tons of trash and borough, and tons of trash by rat count and trash type.
