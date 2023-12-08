@@ -6,4 +6,78 @@ output:
     toc_float: true
 ---
 
-Below are highlights of our analyses and include what we believe to be our most important data plots.
+Below are highlights of our analyses and include what we believe to be our most important data plots:
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(plotly)
+library(lubridate)
+library(dplyr)
+```
+
+```{r rat sightings}
+sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
+  janitor::clean_names() |>
+  separate(created_date, into=c("month","e", "day","f", "year", "g", "time"), sep=c(2,3,5,6,10,11)) |>
+  select(-e,-f,-g) |>
+  mutate(date = paste(year, month, day, sep=""),
+         date = as.numeric(date)) |> 
+  filter(date <= 20231031,
+         date >= 20160101,
+         !incident_zip <= 10000,
+         !incident_zip > 11697,
+         !borough %in% c("Unspecified", NA)) |>
+  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |> select(unique_key, date, year, month, day, everything())
+```
+
+```{r}
+weather_df = rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2016-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+```
+
+```{r}
+sightings$date <- as.Date(as.character(sightings$date), format = "%Y%m%d")
+
+rat_weather =
+  right_join(sightings, weather_df, by="date")
+```
+
+Overall rat sightings trends:
+```{r}
+rat_weather |>
+  mutate(year = as.factor(year)) |>
+  group_by(date) |>
+  summarize(count = n(), year) |>  
+  ggplot(aes(x = date, y = count, color=year)) +
+  geom_point(alpha = 0.25) + 
+  labs(title = "Time Series: Rat Sightings Over Time",
+       x = "Date",
+       y = "Number of Rat Sightings")
+```
+
+```{r}
+# total count per year by borough - most in brooklyn and manhattan
+sightings |> 
+  group_by(year, borough) |> 
+  summarize(count=n()) |> 
+  plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line")
+```
+
+
+
+
+
+
+
+
+
+

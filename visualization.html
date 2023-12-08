@@ -35,6 +35,13 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.10.3/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -379,7 +386,7 @@ div.tocify {
       <a href="visualization.html">Data Visualization</a>
     </li>
     <li>
-      <a href="results.html">Results</a>
+      <a href="results.html">Results/Discussion</a>
     </li>
   </ul>
 </li>
@@ -387,7 +394,7 @@ div.tocify {
   <a href="about.html">About Us</a>
 </li>
 <li>
-  <a href="https://austin-hsin.github.com/P8105_Final_Project.git">
+  <a href="https://github.com/austin-hsin/P8105_Final_Project">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -407,7 +414,81 @@ div.tocify {
 
 
 <p>Below are highlights of our analyses and include what we believe to
-be our most important data plots.</p>
+be our most important data plots:</p>
+<pre class="r"><code>sightings = read_csv(&#39;data/NYC_Rat_Sightings.csv&#39;) |&gt;
+  janitor::clean_names() |&gt;
+  separate(created_date, into=c(&quot;month&quot;,&quot;e&quot;, &quot;day&quot;,&quot;f&quot;, &quot;year&quot;, &quot;g&quot;, &quot;time&quot;), sep=c(2,3,5,6,10,11)) |&gt;
+  select(-e,-f,-g) |&gt;
+  mutate(date = paste(year, month, day, sep=&quot;&quot;),
+         date = as.numeric(date)) |&gt; 
+  filter(date &lt;= 20231031,
+         date &gt;= 20160101,
+         !incident_zip &lt;= 10000,
+         !incident_zip &gt; 11697,
+         !borough %in% c(&quot;Unspecified&quot;, NA)) |&gt;
+  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |&gt; select(unique_key, date, year, month, day, everything())</code></pre>
+<pre><code>## Warning: One or more parsing issues, call `problems()` on your data frame for details,
+## e.g.:
+##   dat &lt;- vroom(...)
+##   problems(dat)</code></pre>
+<pre><code>## Rows: 232143 Columns: 38
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (25): Created Date, Closed Date, Agency, Agency Name, Complaint Type, De...
+## dbl  (6): Unique Key, Incident Zip, X Coordinate (State Plane), Y Coordinate...
+## lgl  (7): Vehicle Type, Taxi Company Borough, Taxi Pick Up Location, Bridge ...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>weather_df = rnoaa::meteo_pull_monitors(
+    c(&quot;USW00094728&quot;),
+    var = c(&quot;PRCP&quot;, &quot;TMIN&quot;, &quot;TMAX&quot;), 
+    date_min = &quot;2016-01-01&quot;,
+    date_max = &quot;2022-12-31&quot;) |&gt;
+  mutate(
+    name = recode(id, USW00094728 = &quot;CentralPark_NY&quot;),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |&gt;
+  select(name, id, everything())</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;hoardr&#39;:
+##   method           from
+##   print.cache_info httr</code></pre>
+<pre><code>## using cached file: /Users/lizbekerman/Library/Caches/org.R-project.R/R/rnoaa/noaa_ghcnd/USW00094728.dly</code></pre>
+<pre><code>## date created (size, mb): 2023-12-02 11:00:44.015667 (8.544)</code></pre>
+<pre><code>## file min/max dates: 1869-01-01 / 2023-11-30</code></pre>
+<pre class="r"><code>sightings$date &lt;- as.Date(as.character(sightings$date), format = &quot;%Y%m%d&quot;)
+
+rat_weather =
+  right_join(sightings, weather_df, by=&quot;date&quot;)</code></pre>
+<p>Overall rat sightings trends:</p>
+<pre class="r"><code>rat_weather |&gt;
+  mutate(year = as.factor(year)) |&gt;
+  group_by(date) |&gt;
+  summarize(count = n(), year) |&gt;  
+  ggplot(aes(x = date, y = count, color=year)) +
+  geom_point(alpha = 0.25) + 
+  labs(title = &quot;Time Series: Rat Sightings Over Time&quot;,
+       x = &quot;Date&quot;,
+       y = &quot;Number of Rat Sightings&quot;)</code></pre>
+<pre><code>## Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in
+## dplyr 1.1.0.
+## ℹ Please use `reframe()` instead.
+## ℹ When switching from `summarise()` to `reframe()`, remember that `reframe()`
+##   always returns an ungrouped data frame and adjust accordingly.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;date&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<p><img src="visualization_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code># total count per year by borough - most in brooklyn and manhattan
+sightings |&gt; 
+  group_by(year, borough) |&gt; 
+  summarize(count=n()) |&gt; 
+  plot_ly(x=~year, y=~count, color=~borough, type=&quot;scatter&quot;, mode=&quot;line&quot;)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;year&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d5df9565a78191399ed5" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-d5df9565a78191399ed5">{"x":{"visdat":{"95d96fc1d7c6":["function () ","plotlyVisDat"]},"cur_data":"95d96fc1d7c6","attrs":{"95d96fc1d7c6":{"x":{},"y":{},"mode":"line","color":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"title":"year","type":"category","categoryorder":"array","categoryarray":["2016","2017","2018","2019","2020","2021","2022","2023"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"count"},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["2016","2017","2018","2019","2020","2021","2022","2023"],"y":[3490,3739,3130,2788,2761,4469,4127,3154],"mode":"line","type":"scatter","name":"BRONX","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["2016","2017","2018","2019","2020","2021","2022","2023"],"y":[5961,7235,6549,6407,5995,9500,10122,8934],"mode":"line","type":"scatter","name":"BROOKLYN","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["2016","2017","2018","2019","2020","2021","2022","2023"],"y":[4588,4479,4277,4314,4175,6946,7454,5832],"mode":"line","type":"scatter","name":"MANHATTAN","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["2016","2017","2018","2019","2020","2021","2022","2023"],"y":[2405,2846,2592,2517,2711,3400,4092,3902],"mode":"line","type":"scatter","name":"QUEENS","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["2016","2017","2018","2019","2020","2021","2022","2023"],"y":[731,784,743,760,614,694,700,644],"mode":"line","type":"scatter","name":"STATEN ISLAND","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 
 
 
