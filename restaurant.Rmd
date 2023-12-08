@@ -1,6 +1,8 @@
 ---
 title: "Rats & Restaurants Analysis"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -27,7 +29,7 @@ scale_fill_discrete = scale_fill_viridis_d
 
 Similar to the trash and sightings findings, we wanted to investigate whether NYC restaurant inspections, specifically health inspection violation code 04K, evidence of rats, would reveal greater insight into NYC's rat problem. 
 
-```{r inspections_df}
+```{r inspections_df, include = FALSE}
 #Importing NYC Restaurant Inspections csv
 inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
   janitor::clean_names() |>

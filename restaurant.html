@@ -30,6 +30,7 @@
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
@@ -218,6 +219,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -244,12 +248,13 @@ $(document).ready(function () {
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li>
-  <a href="report.html">Project Report</a>
-</li>
+        
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
+  <a href="report.html">Project Report</a>
+</li>
+<li>
   <a href="intro.html">Introduction</a>
 </li>
 <li class="dropdown">
@@ -263,7 +268,7 @@ $(document).ready(function () {
       <a href="data_sources.html">Data Sources</a>
     </li>
     <li>
-      <a href="data_overview.html">Data Overview</a>
+      <a href="data_overview.html">Data Cleaning</a>
     </li>
   </ul>
 </li>
@@ -302,7 +307,7 @@ $(document).ready(function () {
       <a href="visualization.html">Data Visualization</a>
     </li>
     <li>
-      <a href="results.html">Results</a>
+      <a href="results.html">Results/Discussion</a>
     </li>
   </ul>
 </li>
@@ -310,7 +315,7 @@ $(document).ready(function () {
   <a href="about.html">About Us</a>
 </li>
 <li>
-  <a href="https://austin-hsin.github.io/P8105_Final_Project/">
+  <a href="https://github.com/austin-hsin/P8105_Final_Project">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -321,6 +326,14 @@ $(document).ready(function () {
 </div><!--/.navbar -->
 
 <div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
 
@@ -333,21 +346,6 @@ $(document).ready(function () {
 whether NYC restaurant inspections, specifically health inspection
 violation code 04K, evidence of rats, would reveal greater insight into
 NYC’s rat problem.</p>
-<pre class="r"><code>#Importing NYC Restaurant Inspections csv
-inspections_df = read_csv(&quot;./data/NYC_Restaurant_Inspections.csv&quot;) |&gt;
-  janitor::clean_names() |&gt;
-  separate(inspection_date, c(&quot;Month&quot;, &quot;Day&quot;, &quot;Year&quot;), sep = &quot;/&quot;) |&gt;
-  select(-Day) |&gt; #can remove other columns as needed
-  filter(as.numeric(Year) &gt; 2015)</code></pre>
-<pre><code>## Rows: 209461 Columns: 27
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr (16): DBA, BORO, BUILDING, STREET, PHONE, CUISINE DESCRIPTION, INSPECTIO...
-## dbl (10): CAMIS, ZIPCODE, SCORE, Latitude, Longitude, Community Board, Counc...
-## lgl  (1): Location Point1
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <p>First, we analyzed the trend of 04K violations in all 5 boroughs from
 2016 to 2023.</p>
 <pre class="r"><code>#Observations of violations
@@ -455,6 +453,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
