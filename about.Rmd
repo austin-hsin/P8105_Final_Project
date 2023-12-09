@@ -8,32 +8,32 @@ output:
 
 The members of this project include:
 
-* <img src="pics/lucia.png" width="50"> Lucia Wang (lw3061)<p>
+* <img src="pics/lucia.png" width="150"> Lucia Wang (lw3061)<p>
   + Department: Epidemiology
   + Certificate: Infectious Disease Epidemiology
   + [Github](https://github.com/wlucia00) | [Website](https://wlucia00.github.io/lw3061_site.github.io/)
 
-* <img src="pics/austin.png" width="50"> Austin Hsin (ah4028)
+* <img src="pics/austin.png" width="150"> Austin Hsin (ah4028)
   + Department: Epidemiology
   + Certificate: Chronic Disease Epidemiology
   + [Github](https://github.com/austin-hsin) | [Website](https://austin-hsin.github.io/austin_hsin.github.io/)
 
-* <img src="pics/juliet.png" width="50"> Juliet Rowe (jer2243)
+* <img src="pics/juliet.png" width="150"> Juliet Rowe (jer2243)
   + Department: Epidemiology
   + Certificate: Applied Biostatistics and Public Health Data Science
   + [Github](https://github.com/julietrowe816) | [Website](https://julietrowe816.github.io/)
 
-* <img src="pics/liz.png" width="50">Elizabeth (Liz) Bekerman (eb3516)
+* <img src="pics/liz.png" width="150">Elizabeth (Liz) Bekerman (eb3516)
   + Department: Health Policy and Management
   + Certificate: Applied Biostatistics and Public Health Data Science
   + [Github](https://github.com/eb3516) | [Website](https://eb3516.github.io/)
 
-* <img src="pics/nancy.png" width="50">Nancy Le (nl2835)
+* <img src="pics/nancy.png" width="150">Nancy Le (nl2835)
   + Department: Health Policy and Management
   + Certificate: Health Policy Analysis
   + [Github](https://github.com/nancyuyenle) | [Website](https://nancyuyenle.github.io/)
 
-* <img src="pics/nandini.png" width="50">Nandini Mutyala (nm3403)
+* <img src="pics/nandini.png" width="150">Nandini Mutyala (nm3403)
   + Department: Epidemiology
   + Certificate: Infectious Disease Epidemiology
   + [Github](https://github.com/NandiniNM) | [Website](https://nandininm.github.io/NandiniMutyala/index.html)
