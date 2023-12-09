@@ -36,5 +36,8 @@ navbar:
       
 output:
   html_document:
+    css: style.css 
     theme: yeti
     always_allow_html: true
+    includes: 
+      in_header:favicon.html

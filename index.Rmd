@@ -6,6 +6,8 @@ output:
     toc_float: true
     theme: yeti
     always_allow_html: true
+    includes:
+      in_header: hero-image.html 
 ---
 
 Welcome to our final project for Fall 2023's P8105 class! This project will take you through recent NYC data on rats and more- maybe you will learn something to avoid these furry foes.
