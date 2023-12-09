@@ -418,23 +418,150 @@ div.tocify {
 <p>This is where the data cleaning/tidying goes.</p>
 <div id="rat-sightings-dataset" class="section level2">
 <h2>Rat Sightings Dataset</h2>
-<pre class="r"><code># can take Lucia&#39;s initial code just for tidying, and not display results?</code></pre>
+<pre class="r"><code>sightings = read_csv(&#39;data/NYC_Rat_Sightings.csv&#39;) |&gt;
+  janitor::clean_names() |&gt;
+  separate(created_date, into=c(&quot;month&quot;,&quot;e&quot;, &quot;day&quot;,&quot;f&quot;, &quot;year&quot;, &quot;g&quot;, &quot;time&quot;), sep=c(2,3,5,6,10,11)) |&gt;
+  select(-e,-f,-g) |&gt;
+  mutate(date = paste(year, month, day, sep=&quot;&quot;),
+         date = as.numeric(date)) |&gt; 
+  filter(date &lt;= 20231031,
+         date &gt;= 20160101,
+         !incident_zip &lt;= 10000,
+         !incident_zip &gt; 11697,
+         !borough %in% c(&quot;Unspecified&quot;, NA)) |&gt;
+  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |&gt; 
+  select(unique_key, date, year, month, day, everything()) |&gt;
+  mutate_all(tolower) |&gt;
+  mutate(across(where(is.character), trimws)) |&gt; 
+  group_by(year, month, borough) |&gt; 
+  summarize(ratcount = n()) </code></pre>
 </div>
 <div id="weather-dataset" class="section level2">
 <h2>Weather Dataset</h2>
-<pre class="r"><code># maybe describe some changes our team members made to rat sightings data to join it with other data</code></pre>
+<pre class="r"><code># maybe describe some changes our team members made to rat sightings data to join it with other data
+weather_df = rnoaa::meteo_pull_monitors(
+    c(&quot;USW00094728&quot;),
+    var = c(&quot;PRCP&quot;, &quot;TMIN&quot;, &quot;TMAX&quot;), 
+    date_min = &quot;2016-01-01&quot;,
+    date_max = &quot;2022-12-31&quot;) |&gt;
+  mutate(
+    name = recode(id, USW00094728 = &quot;CentralPark_NY&quot;),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |&gt;
+  select(name, id, everything())</code></pre>
 </div>
 <div id="trash-dataset" class="section level2">
 <h2>Trash Dataset</h2>
-</div>
-<div id="weather-dataset-1" class="section level2">
-<h2>Weather Dataset</h2>
+<pre class="r"><code>#load and clean waste data
+waste &lt;-
+  read.csv(&quot;data/DSNY_Monthly_Tonnage_Data_20231202.csv&quot;) |&gt; 
+  janitor::clean_names() |&gt; 
+  separate(month, into = c(&quot;year&quot;, &quot;month&quot;), sep = &quot; / &quot;) |&gt;
+  group_by(year, month, borough) |&gt;
+  filter(year &gt;= 2016 &amp; year &lt; 2024 ) |&gt;
+  summarize(
+    total_refuse = sum(refusetonscollected, na.rm = TRUE),
+    total_paper = sum(papertonscollected, na.rm = TRUE),
+    total_mgp = sum(mgptonscollected, na.rm = TRUE))  |&gt; 
+  mutate_all(tolower) |&gt; 
+  mutate(across(where(is.character), trimws)) 
+
+#waste data - pivoted longer
+waste_2 = waste |&gt; 
+   pivot_longer(
+    total_refuse:total_mgp, 
+    names_to = &quot;type&quot;,
+    values_to = &quot;tons&quot;) |&gt; 
+  mutate(type = substr(type, 7, 12),
+         tons = as.numeric(tons)) |&gt; 
+  group_by(year, month, borough, type, tons)
+
+#merge datasets
+merged = inner_join(waste_2, sightings, 
+            by = c(&quot;year&quot;, &quot;month&quot;, &quot;borough&quot;)) |&gt; 
+  mutate(tons = as.numeric(tons)) |&gt; 
+  mutate(
+    combined_ym = paste(year, month, sep = &quot;-&quot;),
+    combined_ym = ym(combined_ym)) 
+
+merged_tons = merged |&gt; 
+  group_by(year, month, borough, ratcount) |&gt; 
+  summarize(total_tons = (sum(tons)))  |&gt; 
+  mutate(
+    combined_ym = paste(year, month, sep = &quot;-&quot;),
+    combined_ym = ym(combined_ym) )</code></pre>
 </div>
 <div id="restaurant-datset" class="section level2">
 <h2>Restaurant Datset</h2>
+<pre class="r"><code>#Importing NYC Restaurant Inspections csv
+inspections_df = read_csv(&quot;./data/NYC_Restaurant_Inspections.csv&quot;) |&gt;
+  janitor::clean_names() |&gt;
+  separate(inspection_date, c(&quot;Month&quot;, &quot;Day&quot;, &quot;Year&quot;), sep = &quot;/&quot;) |&gt;
+  select(-Day) |&gt; #can remove other columns as needed
+  filter(as.numeric(Year) &gt; 2015)</code></pre>
 </div>
 <div id="socioeconomic-factors-dataset" class="section level2">
 <h2>Socioeconomic Factors Dataset</h2>
+<p><em>ONLY POVERTY ATM, DID NOT INCLUDE CROWDING OR EDUCATION</em></p>
+<pre class="r"><code>poverty18 =
+  read_csv(&quot;data/poverty/2018_poverty.csv&quot;, col_names = TRUE) |&gt; 
+  janitor::clean_names() |&gt; 
+  select(geo_id, name, s1701_c03_001e) |&gt; 
+  rename(
+    below_poverty_y18 = s1701_c03_001e) |&gt; 
+  drop_na() |&gt; 
+  filter(!row_number() %in% c(1)) |&gt; 
+  mutate_at(c(&quot;below_poverty_y18&quot;), as.numeric) |&gt; 
+  mutate(prop_poverty_y18 = below_poverty_y18/100)
+
+poverty19 =
+  read_csv(&quot;data/poverty/2019_poverty.csv&quot;, col_names = TRUE) |&gt; 
+  janitor::clean_names() |&gt; 
+  select(geo_id, s1701_c03_001e) |&gt; 
+  rename(
+    below_poverty_y19 = s1701_c03_001e) |&gt; 
+  drop_na() |&gt; 
+  filter(!row_number() %in% c(1)) |&gt; 
+  mutate_at(c(&quot;below_poverty_y19&quot;), as.numeric) |&gt; 
+  mutate(prop_poverty_y19 = below_poverty_y19/100)
+
+poverty20 =
+  read_csv(&quot;data/poverty/2020_poverty.csv&quot;, col_names = TRUE) |&gt; 
+  janitor::clean_names() |&gt; 
+  select(geo_id, s1701_c03_001e) |&gt; 
+  rename(
+    below_poverty_y20 = s1701_c03_001e) |&gt; 
+  drop_na() |&gt; 
+  filter(!row_number() %in% c(1)) |&gt; 
+  mutate_at(c(&quot;below_poverty_y20&quot;), as.numeric) |&gt; 
+  mutate(prop_poverty_y20 = below_poverty_y20/100)
+  
+poverty21 =
+  read_csv(&quot;data/poverty/2021_poverty.csv&quot;, col_names = TRUE) |&gt; 
+  janitor::clean_names() |&gt; 
+  select(geo_id, s1701_c03_001e) |&gt; 
+  rename(
+    below_poverty_y21 = s1701_c03_001e) |&gt; 
+  drop_na() |&gt; 
+  filter(!row_number() %in% c(1)) |&gt; 
+  mutate_at(c(&quot;below_poverty_y21&quot;), as.numeric) |&gt; 
+  mutate(prop_poverty_y21 = below_poverty_y21/100)
+
+poverty_10s = 
+  full_join(poverty18, poverty19, by = &quot;geo_id&quot;)
+
+poverty_20s = 
+  full_join(poverty20, poverty21, by = &quot;geo_id&quot;)
+
+poverty_all =
+  full_join(poverty_10s, poverty_20s, by = &quot;geo_id&quot;) |&gt; 
+  drop_na() |&gt; 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, &quot;(?&lt;=,)[^,]+(?=,)&quot;)
+  ) |&gt; 
+  filter(county %in% c(&quot; Kings County&quot;,&quot; Bronx County&quot;,&quot; Queens County&quot;,&quot; Richmond County&quot;,
+                       &quot; New York County&quot;))</code></pre>
 </div>
 
 

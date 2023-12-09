@@ -9,23 +9,169 @@ output:
 
 This is where the data cleaning/tidying goes.
 
+```{r, echo=FALSE, message=FALSE, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(readxl)
+library(stringr)
+library(ggplot2)
+library(choroplethr)
+library(choroplethrMaps)
+```
+
 ## Rat Sightings Dataset
-```{r}
-# can take Lucia's initial code just for tidying, and not display results?
+```{r rat sightings, warning = FALSE, message = FALSE}
+sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
+  janitor::clean_names() |>
+  separate(created_date, into=c("month","e", "day","f", "year", "g", "time"), sep=c(2,3,5,6,10,11)) |>
+  select(-e,-f,-g) |>
+  mutate(date = paste(year, month, day, sep=""),
+         date = as.numeric(date)) |> 
+  filter(date <= 20231031,
+         date >= 20160101,
+         !incident_zip <= 10000,
+         !incident_zip > 11697,
+         !borough %in% c("Unspecified", NA)) |>
+  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |> 
+  select(unique_key, date, year, month, day, everything()) |>
+  mutate_all(tolower) |>
+  mutate(across(where(is.character), trimws)) |> 
+  group_by(year, month, borough) |> 
+  summarize(ratcount = n()) 
 ```
 
 ## Weather Dataset
-```{r}
+```{r weather import, warning = FALSE, message = FALSE}
 # maybe describe some changes our team members made to rat sightings data to join it with other data
+weather_df = rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2016-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
 ```
 
 ## Trash Dataset
+```{r waste data, warning = FALSE, message = FALSE}
+#load and clean waste data
+waste <-
+  read.csv("data/DSNY_Monthly_Tonnage_Data_20231202.csv") |> 
+  janitor::clean_names() |> 
+  separate(month, into = c("year", "month"), sep = " / ") |>
+  group_by(year, month, borough) |>
+  filter(year >= 2016 & year < 2024 ) |>
+  summarize(
+    total_refuse = sum(refusetonscollected, na.rm = TRUE),
+    total_paper = sum(papertonscollected, na.rm = TRUE),
+    total_mgp = sum(mgptonscollected, na.rm = TRUE))  |> 
+  mutate_all(tolower) |> 
+  mutate(across(where(is.character), trimws)) 
 
-## Weather Dataset
+#waste data - pivoted longer
+waste_2 = waste |> 
+   pivot_longer(
+    total_refuse:total_mgp, 
+    names_to = "type",
+    values_to = "tons") |> 
+  mutate(type = substr(type, 7, 12),
+         tons = as.numeric(tons)) |> 
+  group_by(year, month, borough, type, tons)
+
+#merge datasets
+merged = inner_join(waste_2, sightings, 
+            by = c("year", "month", "borough")) |> 
+  mutate(tons = as.numeric(tons)) |> 
+  mutate(
+    combined_ym = paste(year, month, sep = "-"),
+    combined_ym = ym(combined_ym)) 
+
+merged_tons = merged |> 
+  group_by(year, month, borough, ratcount) |> 
+  summarize(total_tons = (sum(tons)))  |> 
+  mutate(
+    combined_ym = paste(year, month, sep = "-"),
+    combined_ym = ym(combined_ym) )
+```
 
 ## Restaurant Datset
 
+```{r inspections_df, warning = FALSE, message = FALSE}
+#Importing NYC Restaurant Inspections csv
+inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
+  janitor::clean_names() |>
+  separate(inspection_date, c("Month", "Day", "Year"), sep = "/") |>
+  select(-Day) |> #can remove other columns as needed
+  filter(as.numeric(Year) > 2015)
+```
+
 ## Socioeconomic Factors Dataset
 
+*ONLY POVERTY ATM, DID NOT INCLUDE CROWDING OR EDUCATION*
+
+```{r poverty, warning = FALSE, message = FALSE}
+poverty18 =
+  read_csv("data/poverty/2018_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y18 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y18"), as.numeric) |> 
+  mutate(prop_poverty_y18 = below_poverty_y18/100)
+
+poverty19 =
+  read_csv("data/poverty/2019_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y19 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y19"), as.numeric) |> 
+  mutate(prop_poverty_y19 = below_poverty_y19/100)
+
+poverty20 =
+  read_csv("data/poverty/2020_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y20 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y20"), as.numeric) |> 
+  mutate(prop_poverty_y20 = below_poverty_y20/100)
+  
+poverty21 =
+  read_csv("data/poverty/2021_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y21 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y21"), as.numeric) |> 
+  mutate(prop_poverty_y21 = below_poverty_y21/100)
+
+poverty_10s = 
+  full_join(poverty18, poverty19, by = "geo_id")
+
+poverty_20s = 
+  full_join(poverty20, poverty21, by = "geo_id")
+
+poverty_all =
+  full_join(poverty_10s, poverty_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
 
 
