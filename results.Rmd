@@ -6,6 +6,20 @@ output:
     toc_float: true
 ---
 
-This is where the results/discussion go. In words, explain what we found. Do the rats really run the city?
+## Conclusion
+After our extensive analysis, we have come to the conclusion that the rats really do run the city of New York.
 
-Also, explain potential impacts on policy or recommendations.
+As we can see from the sightings reports, the number of rats skyrocketed in 2020 during the COVID-related lockdowns. Since then, we have not been able to return anywhere close to pre-lockdown levels of rat sightings.
+
+Despite the appointment of the Rat Czar, we found that there has been no statistically significant decrease in rat sightings, leading us to our aforementioned conclusion.
+
+## Moving Forward
+However, all hope is not lost. Throughout our analyses, we have been able to pinpoint opportunities for intervention which may help to decrease future rat sightings.
+
+First, we noticed that summer months (particularly with higher temperatures and less precipitation), correlate to more reports of rat sightings. The Rat Czar along with the Mayor's Office and Department of Sanitation should focus their efforts on policies which would be effective during this time of year.
+
+Second, we found that, increased quantities of trash of all types are associated with higher counts of rat sightings. While not surprising, the Rat Czar should continue to pursue policy which targets the disposal and removal of trash from NYC streets. This may include limiting number of days or times of day which trash can be put outside, or increasing the quantity of trash pickups throughout the city to ensure timely removal.
+
+Third, we tracked strong associations between increased rat sightings and conditions of lower socioeconomic status such as crowding, education, and poverty. Most notably, we found that crowding of people in dwellings is strongly linked to rat sightings. While it is difficult to address such complex problems, we can implement policies that target improvements in areas that are historically lower SES.
+
+Lastly, we found that in every analysis, there are noticeable differences in rat sightings between boroughs. While each borough has more differences than just the size of their rat population, it is worth mentioning that policies may be more effective if they are designed and implemented on a borough-wide, rather than city-wide, basis. Borough specific policies can be tailored to more specifically address problems associated with rat population within the borough.
