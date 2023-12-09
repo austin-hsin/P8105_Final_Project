@@ -5,7 +5,6 @@
 .hero-image {
     position: relative;
     margin-bottom: 2em;
-    /* liner gradient tints the image darker for readability*/
     background-image: url(pics/rat-bg.png); 
     height: 1200px;
     background-size: cover;
@@ -18,10 +17,10 @@
 
 /*-----------------TOC----------------*/
 
-/* Makes TOC sticky (needed if you used a hero image) */
+/* Makes TOC sticky */
 
 .row-fluid{
-  display: flex; /* Necessary for sticky TOC*/
+  display: flex; 
 
 }
 
