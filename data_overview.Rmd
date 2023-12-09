@@ -1,5 +1,5 @@
 ---
-title: "Data Overview"
+title: "Data Cleaning"
 output: 
   html_document:
     toc: true
@@ -9,12 +9,23 @@ output:
 
 This is where the data cleaning/tidying goes.
 
-## Rat Sightings
+## Rat Sightings Dataset
 ```{r}
 # can take Lucia's initial code just for tidying, and not display results?
 ```
 
-## etc
+## Weather Dataset
 ```{r}
 # maybe describe some changes our team members made to rat sightings data to join it with other data
 ```
+
+## Trash Dataset
+
+## Weather Dataset
+
+## Restaurant Datset
+
+## Socioeconomic Factors Dataset
+
+
+
