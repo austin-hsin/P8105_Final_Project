@@ -12,11 +12,11 @@ output:
 
 Welcome to our final project for Fall 2023's P8105 class! This project will take you through recent NYC data on rats and more- maybe you will learn something to avoid these furry foes.
 
-<img src="pics/rat-bg.png" style="max-width:100% height:auto">
-
 ## Welcome!
 
 Through our research, data tidying, analyses, and conclusions, we've tried to answer the question: Who rules NYC: the Rat King, or the Rat Czar?
+
+<img src="pics/rat-bg.png" style="max-width:100% height:auto">
 
 ## Screencast
 This short screencast lays out what information is on our website and walks through how to navigate the site.

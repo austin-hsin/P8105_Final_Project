@@ -19,9 +19,9 @@ library(choroplethrMaps)
 This report gives a comprehensive overview of our project process, results, and thoughts, with code samples and select visualizations to showcase our questions and conclusions. 
 
 ## Motivation and Related Work
-As reflected on our home page, when brainstorming for this project, our group members found ourselves drawn towards understanding NYC rats. Since rats are likely related to various determinants of health, as Mailman students who study, live, or work in New York City, we were interested in figuring out the scope of the problem.
+As reflected on our home page, when brainstorming for this project, our group members found ourselves drawn towards understanding NYC rats. Uproar about [growing rat populations since 2020](https://english.elpais.com/usa/2022-06-13/the-rat-scourge-tarnishing-new-yorks-image-and-post-covid-recovery.html) and newly created NYC Rodent Mitigation Zones made us interested in seeing if the city was truly working to curb the rat problem. Since rats are related to various determinants of health, as Mailman students who study, live, or work in NYC we wanted to figure out the true scope of the problem.
 
-News reports about rats in NYC, laws passed about rodent mitigation and the coronation of the Rat Czar in April 2023, trending articles about rat spottings, viral media about rats, and more inspired us to go ahead with this topic.
+[News reports](https://www.npr.org/2022/10/19/1130026635/new-york-is-fighting-rats-in-the-streets) about rats in NYC, laws passed about rodent mitigation and the [coronation of the Rat Czar](https://www.nyc.gov/office-of-the-mayor/news/249-23/mayor-adams-anoints-kathleen-corradi-nyc-s-first-ever-rat-czar-) in April 2023, trending articles about rat spottings, [viral media](https://www.theguardian.com/world/video/2015/sep/21/pizza-rat-new-york-subway-video) about rats, [education videos](https://youtu.be/cosTXRzBb0E), and more inspired us to go ahead with this topic.
 
 ## Initial Questions
 Since we were interested in the scope of the rat problem, our initial questions were:
@@ -38,11 +38,12 @@ As we tided and joined data, we realized the Rat Czar is so new that there isn't
 
 ## Data
 
-Data was taken majorly from [NYC Open Data](https://opendata.cityofnewyork.us/), [Census data](https://www.census.gov/data.html), and [NOAA](https://www.ncei.noaa.gov/cdo-web/datasets).
+Our major [data sources](data_sources.html) were [NYC Open Data](https://opendata.cityofnewyork.us/), [Census data](https://www.census.gov/data.html), and [NOAA](https://www.ncei.noaa.gov/cdo-web/datasets).
 
-Data was either imported from csv or scraped from the web, tidied with the usual `dplyr` functions, and datasets were joined by variables like `date` or `borough`. 
+As for the [data tidying process](data_overview.html), data was either imported from csv or scraped from the web, tidied with the usual `dplyr` functions, and datasets were joined by variables like `date` or `geo_id`. 
 
-The main data source that we used across this project was NYC Rat Sightings. The initial tidying process is included here, but various changes were made after our exploratory analyses.
+**Rat Sightings**
+The main data source that we used across this project was NYC Rat Sightings. The initial tidying process for this dataset worked to filter out data for the time period of January 1, 2016 to October 31, 2023. 
 ```{r rats, echo=TRUE}
 sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
   janitor::clean_names() |>
@@ -62,27 +63,10 @@ After initial exploration, we scraped weather data from NOAA and imported open-s
 
 Some issues we ran into during the data cleaning process were mismatching variable types across datasets, tidying variables into the desired format, and thinking of ways to display and understand our large quantities of data. 
 
-More information about the data sources are found [here](data_sources.html) and the full data cleaning process is documented [here](data_overview.html).
+**Weather**
 
-## [Analyses](visualization.html)
-As stated earlier, the questions we had for our project evolved as we worked to join and analyze data. Here are some select summaries and visualizations of our data (more can be found in the analyses subsections). 
-
-Together, these analyses show the scope of rat sightings in NYC between January 1, 2016 to October 31, 2023. We examined social, environmental, and economic conditions through weather, trash density, restaurant inspections, and measures of socioeconomic status. 
-
-```{r import, include=FALSE}
-sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
-  janitor::clean_names() |>
-  separate(created_date, into=c("month","e", "day","f", "year", "g", "time"), sep=c(2,3,5,6,10,11)) |>
-  select(-e,-f,-g) |>
-  mutate(date = paste(year, month, day, sep=""),
-         date = as.numeric(date)) |> 
-  filter(date <= 20231031,
-         date >= 20160101,
-         !incident_zip <= 10000,
-         !incident_zip > 11697,
-         !borough %in% c("Unspecified", NA)) |>
-  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |> select(unique_key, date, year, month, day, everything())
-
+Tidying
+```{r weather, echo=TRUE}
 weather_df = rnoaa::meteo_pull_monitors(
     c("USW00094728"),
     var = c("PRCP", "TMIN", "TMAX"), 
@@ -93,53 +77,20 @@ weather_df = rnoaa::meteo_pull_monitors(
     tmin = tmin / 10,
     tmax = tmax / 10) |>
   select(name, id, everything())
+```
 
+Joining
+```{r weather2, echo=TRUE}
 sightings$date <- as.Date(as.character(sightings$date), format = "%Y%m%d")
 
 rat_weather =
   right_join(sightings, weather_df, by="date")
 ```
 
-```{r timeseries}
-rat_weather |>
-  mutate(year = as.factor(year)) |>
-  group_by(date) |>
-  summarize(count = n(), year) |>  
-  ggplot(aes(x = date, y = count, color=year)) +
-  geom_point(alpha = 0.25) + 
-  labs(title = "Time Series: Rat Sightings Over Time",
-       x = "Date",
-       y = "Number of Rat Sightings")
-```
+**Trash**
 
-```{r borough}
-sightings |> 
-  group_by(year, borough) |> 
-  summarize(count=n()) |> 
-  plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line") |> layout(title = "Rat Sightings by Borough", xaxis=list(title="Year"), yaxis=list(title="Number of Rat Sightings"))
-```
-
-```{r temperature}
-rat_weather |>
-  group_by(date) |>
-  summarize(count = n(), year, tmax) |>
-  ggplot(aes(x = tmax, y = count, color = year)) + 
-  geom_point(alpha = .3) +
-  geom_smooth(se = FALSE, color="black") + 
-  facet_grid(. ~ year) +
-  labs(title = "Maximum Temperature vs. Rat Sightings by Year",
-       x = "Maximum temperature (degrees Celsius)",
-       y = "Number of Rat Sightings")
-```
-
-```{r trash import and merge, include=FALSE}
-sightings = sightings |>
-  select(unique_key, date, year, month, day, everything()) |> 
-  mutate_all(tolower) |>
-  mutate(across(where(is.character), trimws)) |> 
-  group_by(year, month, borough) |> 
-  summarize(ratcount = n()) 
-
+Tidying
+```{r trash, echo=TRUE}
 waste <-
   read.csv("data/DSNY_Monthly_Tonnage_Data_20231202.csv") |> 
   janitor::clean_names() |> 
@@ -151,7 +102,7 @@ waste <-
     total_paper = sum(papertonscollected, na.rm = TRUE),
     total_mgp = sum(mgptonscollected, na.rm = TRUE))  |> 
   mutate_all(tolower) |> 
-  mutate(across(where(is.character), trimws)) 
+  mutate(across(where(is.character), trimws))
 
 waste_2 = waste |> 
    pivot_longer(
@@ -159,10 +110,20 @@ waste_2 = waste |>
     names_to = "type",
     values_to = "tons") |> 
   mutate(type = substr(type, 7, 12),
-         tons = as.numeric(tons)) |> 
+         tons = as.numeric(tons)) |>
   group_by(year, month, borough, type, tons)
 
-merged = inner_join(waste_2, sightings, 
+sightings2 = sightings |>
+  select(unique_key, date, year, month, day, everything()) |> 
+  mutate_all(tolower) |>
+  mutate(across(where(is.character), trimws)) |> 
+  group_by(year, month, borough) |> 
+  summarize(ratcount = n())
+```
+
+Joining
+```{r trash2, echo=TRUE}
+merged = inner_join(waste_2, sightings2, 
             by = c("year", "month", "borough")) |> 
   mutate(tons = as.numeric(tons)) |> 
   mutate(
@@ -177,48 +138,21 @@ merged_tons = merged |>
     combined_ym = ym(combined_ym) )
 ```
 
-```{r trash graph}
-ggplot(merged_tons, aes(x=combined_ym, y = total_tons, color = borough, group = interaction(year, borough))) + 
-    geom_line() + 
-    labs(title = "Total Tons of Trash by Borough",
-         x = "Date",
-         y = "Total Tons",
-         caption = "Data from DSNY Monthly Tonnage Data") 
-```
+**Restaurant Inspections**
 
-```{r inspections_df, include=FALSE}
-#Importing NYC Restaurant Inspections csv
+Cleaning
+```{r restaurants, echo=TRUE}
 inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
   janitor::clean_names() |>
   separate(inspection_date, c("Month", "Day", "Year"), sep = "/") |>
-  select(-Day) |> #can remove other columns as needed
+  select(-Day) |> 
   filter(as.numeric(Year) > 2015)
 ```
 
-```{r violation plot trend}
-violations_plot_df <- inspections_df |>
-  group_by(Year, boro, violation_code) |>
-  mutate(code_obs = n())
-```
+**Socioeconomic Factors**
 
-```{r top 20 cuisine 04k violations}
-violations_plot_df |>
-  filter(violation_code == "04K") |>
-  group_by(cuisine_description) |>
-  mutate(cuisine_obs = n()) |>
-  filter(cuisine_obs > 25) |>
-  ggplot(aes(x = reorder(cuisine_description, cuisine_obs), 
-             y = cuisine_obs)) +
-  geom_point(aes(color = cuisine_description)) +
-  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
-  labs(title = "Top 20 Rat Violation Offenders by Cuisine Type 2016-2023") +
-  theme(legend.position = 'none') +
-  xlab("Cuisine Type") +
-  ylab("Number of Rat Violations") +
-  scale_y_continuous(breaks = c(50, 100, 150, 200, 250, 300))
-```
-
-```{r crowding data, include=FALSE}
+_Crowding_: Cleaning
+```{r ses1, echo=TRUE}
 crowding18 =
   read_csv("data/crowding/2018_crowding.csv", col_names = TRUE) |> 
   janitor::clean_names() |> 
@@ -294,7 +228,10 @@ crowding21 =
     bet_prop_y21  = bet_1to1.5_y21/total_homes_y21,
     more_prop_y21 = more_than_1.5_y21/total_homes_y21,
   )
+```
 
+Joining
+```{r ses12, echo=TRUE}
 crowding_10s = 
   full_join(crowding18, crowding19, by = "geo_id")
 
@@ -312,20 +249,341 @@ crowding_all =
                        " New York County"))
 ```
 
-```{r ses sightings edit, include=FALSE}
-sightings = read_csv('data/NYC_Rat_Sightings.csv') |> 
+_Education_: Tidying
+```{r ses2, echo=TRUE}
+edu18 =
+  read_csv("data/edu/edu_2018.csv", col_names = TRUE) |> 
   janitor::clean_names() |> 
-  separate(created_date, into=c("month","e","day","f","year","g","time"), sep=c(2,3,5,6,10,11)) |> 
-  select(-e,-f,-g) |> 
-  mutate(date = paste(year, month, day, sep=""),
-         date = as.numeric(date)) |>  
-  filter(date <= 20231031, date >= 20160101, !incident_zip <= 10000, !incident_zip >11697, !borough %in%
-           c("Unspecified", NA)) |> 
-  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name,
-         -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp,
-         -bridge_highway_segment, -bridge_highway_direction) |> 
-  select(unique_key, date, year, month, day, everything()) 
+  select(geo_id, name, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y18        = s1501_c01_007e,
+    no_hs_diploma_y18 = s1501_c01_008e,
+    hs_grad_y18       = s1501_c01_009e,
+    some_college_y18  = s1501_c01_010e,
+    associate_y18     = s1501_c01_011e,
+    bachelor_y18      = s1501_c01_012e,
+    graduate_y18      = s1501_c01_013e,
+    total_pop_y18     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y18","no_hs_diploma_y18","hs_grad_y18","some_college_y18","associate_y18",
+              "bachelor_y18","graduate_y18", "total_pop_y18"), as.numeric) |> 
+  mutate(
+    hs_or_less_y18 = (rowSums(across(c(less_9_y18,no_hs_diploma_y18,hs_grad_y18))))/total_pop_y18,
+    college_y18    = (rowSums(across(c(some_college_y18,associate_y18,bachelor_y18,graduate_y18))))/total_pop_y18
+  )
 
+edu19 =
+  read_csv("data/edu/edu_2019.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y19        = s1501_c01_007e,
+    no_hs_diploma_y19 = s1501_c01_008e,
+    hs_grad_y19       = s1501_c01_009e,
+    some_college_y19  = s1501_c01_010e,
+    associate_y19     = s1501_c01_011e,
+    bachelor_y19      = s1501_c01_012e,
+    graduate_y19      = s1501_c01_013e,
+    total_pop_y19     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y19","no_hs_diploma_y19","hs_grad_y19","some_college_y19","associate_y19",
+              "bachelor_y19","graduate_y19", "total_pop_y19"), as.numeric) |> 
+  mutate(
+    hs_or_less_y19 = (rowSums(across(c(less_9_y19,no_hs_diploma_y19,hs_grad_y19))))/total_pop_y19,
+    college_y19    = (rowSums(across(c(some_college_y19,associate_y19,bachelor_y19,graduate_y19))))/total_pop_y19
+  )
+
+edu20 =
+  read_csv("data/edu/edu_2020.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y20        = s1501_c01_007e,
+    no_hs_diploma_y20 = s1501_c01_008e,
+    hs_grad_y20       = s1501_c01_009e,
+    some_college_y20  = s1501_c01_010e,
+    associate_y20     = s1501_c01_011e,
+    bachelor_y20      = s1501_c01_012e,
+    graduate_y20      = s1501_c01_013e,
+    total_pop_y20     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y20","no_hs_diploma_y20","hs_grad_y20","some_college_y20","associate_y20",
+              "bachelor_y20","graduate_y20", "total_pop_y20"), as.numeric) |> 
+  mutate(
+    hs_or_less_y20 = (rowSums(across(c(less_9_y20,no_hs_diploma_y20,hs_grad_y20))))/total_pop_y20,
+    college_y20    = (rowSums(across(c(some_college_y20,associate_y20,bachelor_y20,graduate_y20))))/total_pop_y20
+  )
+
+edu21 =
+  read_csv("data/edu/edu_2021.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y21        = s1501_c01_007e,
+    no_hs_diploma_y21 = s1501_c01_008e,
+    hs_grad_y21       = s1501_c01_009e,
+    some_college_y21  = s1501_c01_010e,
+    associate_y21     = s1501_c01_011e,
+    bachelor_y21      = s1501_c01_012e,
+    graduate_y21      = s1501_c01_013e,
+    total_pop_y21     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y21","no_hs_diploma_y21","hs_grad_y21","some_college_y21","associate_y21",
+              "bachelor_y21","graduate_y21", "total_pop_y21"), as.numeric) |> 
+  mutate(
+    hs_or_less_y21 = (rowSums(across(c(less_9_y21,no_hs_diploma_y21,hs_grad_y21))))/total_pop_y21,
+    college_y21    = (rowSums(across(c(some_college_y21,associate_y21,bachelor_y21,graduate_y21))))/total_pop_y21
+  )
+```
+
+Joining
+```{r ses22, echo=TRUE}
+edu_10s = 
+  full_join(edu18, edu19, by = "geo_id")
+
+edu_20s = 
+  full_join(edu20, edu21, by = "geo_id")
+
+edu_all =
+  full_join(edu_10s, edu_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+_Poverty_:Tidying
+```{r ses3, echo=TRUE}
+poverty18 =
+  read_csv("data/poverty/2018_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y18 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y18"), as.numeric) |> 
+  mutate(prop_poverty_y18 = below_poverty_y18/100)
+
+poverty19 =
+  read_csv("data/poverty/2019_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y19 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y19"), as.numeric) |> 
+  mutate(prop_poverty_y19 = below_poverty_y19/100)
+
+poverty20 =
+  read_csv("data/poverty/2020_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y20 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y20"), as.numeric) |> 
+  mutate(prop_poverty_y20 = below_poverty_y20/100)
+  
+poverty21 =
+  read_csv("data/poverty/2021_poverty.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1701_c03_001e) |> 
+  rename(
+    below_poverty_y21 = s1701_c03_001e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("below_poverty_y21"), as.numeric) |> 
+  mutate(prop_poverty_y21 = below_poverty_y21/100)
+```
+
+Joining
+```{r ses32, echo=TRUE}
+poverty_10s = 
+  full_join(poverty18, poverty19, by = "geo_id")
+
+poverty_20s = 
+  full_join(poverty20, poverty21, by = "geo_id")
+
+poverty_all =
+  full_join(poverty_10s, poverty_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+_Vacancy_: Tidying
+```{r ses4, echo=TRUE}
+vacancy18 =
+  read_csv("data/vacancy/2018_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y18 = b25004_001e,
+    vacant_y18     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y18","vacant_y18"), as.numeric) |> 
+  mutate(prop_vacant_y18 = vacant_y18/total_home_y18)
+
+vacancy19 =
+  read_csv("data/vacancy/2019_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y19 = b25004_001e,
+    vacant_y19     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y19","vacant_y19"), as.numeric) |> 
+  mutate(prop_vacant_y19 = vacant_y19/total_home_y19)
+
+vacancy20 =
+  read_csv("data/vacancy/2020_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y20 = b25004_001e,
+    vacant_y20     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y20","vacant_y20"), as.numeric) |> 
+  mutate(prop_vacant_y20 = vacant_y20/total_home_y20)
+  
+vacancy21 =
+  read_csv("data/vacancy/2021_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y21 = b25004_001e,
+    vacant_y21     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |>  
+  mutate_at(c("total_home_y21","vacant_y21"), as.numeric) |> 
+  mutate(prop_vacant_y21 = vacant_y21/total_home_y21)
+```
+
+Joining
+```{r ses42, echo=TRUE}
+vacancy_10s = 
+  full_join(vacancy18, vacancy19, by = "geo_id")
+
+vacancy_20s = 
+  full_join(vacancy20, vacancy21, by = "geo_id")
+
+vacancy_all =
+  full_join(vacancy_10s, vacancy_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate( 
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+    ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+## Analyses
+As stated earlier, the questions we had for our project evolved as we worked to join and analyze data. Here are our select summaries and visualizations of our data (more analyses can be found in the respective subpages). 
+
+Together, these analyses show the scope of rat sightings in NYC between January 1, 2016 to October 31, 2023. We examined social, environmental, and economic conditions through weather, trash density, restaurant inspections, and measures of socioeconomic status. 
+
+First, this plot shows the number of rat sightings over time. A clear trend is shown through the recurring curve of increased rat sightings in the middle of the year, with overall sightings also increasing in the past few years.
+```{r timeseries}
+rat_weather |>
+  mutate(year = as.factor(year)) |>
+  group_by(date) |>
+  summarize(count = n(), year) |>  
+  ggplot(aes(x = date, y = count, color=year)) +
+  geom_point(alpha = 0.25) + 
+  labs(title = "Time Series: Rat Sightings Over Time",
+       x = "Date",
+       y = "Number of Rat Sightings")
+```
+
+Next, looking at the rat sightings by borough shows that while trends across 2016-2023 appear similar, Brooklyn and Manhattan have much higher counts of rat sightings than the other 3 boroughs. 
+
+```{r borough}
+sightings |> 
+  group_by(year, borough) |> 
+  summarize(count=n()) |> 
+  plot_ly(x=~year, y=~count, color=~borough, type="scatter", mode="line") |> layout(title = "Rat Sightings by Borough", xaxis=list(title="Year"), yaxis=list(title="Number of Rat Sightings"))
+```
+
+Looking at maximum temperature data, higher temperatures are associated with more rat sightings. The spread of rat sightings data also stretches vertically over the years.
+
+```{r temperature}
+rat_weather |>
+  group_by(date) |>
+  summarize(count = n(), year, tmax) |>
+  ggplot(aes(x = tmax, y = count, color = year)) + 
+  geom_point(alpha = .3) +
+  geom_smooth(se = FALSE, color="black") + 
+  facet_grid(. ~ year) +
+  labs(title = "Maximum Temperature vs. Rat Sightings by Year",
+       x = "Maximum temperature (degrees Celsius)",
+       y = "Number of Rat Sightings")
+```
+
+The boroughs producing the most trash are Brooklyn and Manhattan, which may be related to their status as the two boroughs with the most rat sightings.
+
+```{r trash graph}
+ggplot(merged_tons, aes(x=combined_ym, y = total_tons, color = borough, group = interaction(year, borough))) + 
+    geom_line() + 
+    labs(title = "Total Tons of Trash by Borough",
+         x = "Date",
+         y = "Total Tons",
+         caption = "Data from DSNY Monthly Tonnage Data") 
+```
+
+Between 2016-2023, the top 20 restaurant cuisines with rat-related inspection violations are shown below. Most ranged between 25 to 100 violations, but two cuisines had almost 300 violations each.
+
+```{r violation plot trend}
+violations_plot_df <- inspections_df |>
+  group_by(Year, boro, violation_code) |>
+  mutate(code_obs = n())
+```
+
+```{r top 20 cuisine 04k violations}
+violations_plot_df |>
+  filter(violation_code == "04K") |>
+  group_by(cuisine_description) |>
+  mutate(cuisine_obs = n()) |>
+  filter(cuisine_obs > 25) |>
+  ggplot(aes(x = reorder(cuisine_description, cuisine_obs), 
+             y = cuisine_obs)) +
+  geom_point(aes(color = cuisine_description)) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+  labs(title = "Top 20 Rat Violation Offenders by Cuisine Type 2016-2023") +
+  theme(legend.position = 'none') +
+  xlab("Cuisine Type") +
+  ylab("Number of Rat Violations") +
+  scale_y_continuous(breaks = c(50, 100, 150, 200, 250, 300))
+```
+
+Finally, zooming into the Bronx, the density rat sightings seems to be related to amount of crowding by census tract. This indicates a potential relationship between occupants per room and number of rat sightings.
+
+```{r ses sightings edit, include=FALSE}
 crowding_Bronx = crowding_all |> 
   pivot_longer(less_than_1_y18:more_prop_y21,
                names_to = "occupancy",
@@ -375,4 +633,13 @@ tract_choropleth(crowding_Bronx,"new york", county_zoom = 36005,
 ## Discussion
 After all of our hard work, we have decided that...the Rat King still prevails.
 
-Rat sightings have increased over time, and they seem to be associated with variables like location, crowding, temperature, or amount of trash produced. The root causes of the NYC rat population are likely to be the same causes of adverse health in this city. The rat Czar needs to take into account structural issues like housing, sanitation, and health infrastructure, as well as issues like climate change, to properly tackle the rat population. 
+Rat sightings have increased over time, and they seem to be associated with variables like location, crowding, temperature, or amount of trash produced. The number of rat sightings is nowhere close to pre-2020 levels, and the slope of rat sightings has not decreased significantly after the appointment of the Rat Czar.
+
+There is room for intervention here and now, if the Rat Czar has the prowess to take on this challenge. In terms of root causes of the NYC rat population, they look very similar to causes of adverse health in people. 
+
+* Weather patterns could be a cause of changing rat populations. Rats were more commonly spotted in warmer months, between May to October. As temperatures continue to rise, the number of rat sightings is likely to go up as well. Policies to tackle extreme heat and climate change might work to slow down the rise in rats. 
+* Trash quantities go hand in hand with increased rat sightings. The Rat Czar has attempted to address this with the law that trash cannot be placed outside until after 8pm, but perhaps other ordinances need to be explored. For example, restaurants with rat-related violations may need more enforcement of sanitation or trash policies.
+* Lower socioeconomic status and rat sightings seem to be linked, because conditions like crowding and poverty are conducive to rat populations. Systemic changes that work to address housing and income may be a way to combat the rat problem here.
+* Specific boroughs had more rat sightings, which could be related to population, land area, or borough-wide policy. Borough or county leaders may need to evaluate the regions with the most sightings to develop targeted interventions in these areas.
+
+To sum it up, the rat Czar needs to take into account structural issues like housing, sanitation, and health infrastructure, as well as issues like climate change, to properly tackle the rat population of NYC. The rats may run the city... but they don't have to forever.

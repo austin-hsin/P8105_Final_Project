@@ -6,7 +6,7 @@ output:
     toc_float: true
 ---
 
-This page provides highlights of our analyses and includes what we believe to be our most important data plots. 
+This page provides highlights of our analyses and includes what we believe to be our most important data plots across the project. Discussion of the data visualization process is documented in individual pages under the Analyses tab.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)

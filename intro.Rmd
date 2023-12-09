@@ -6,6 +6,8 @@ output:
     toc_float: true
 ---
 
+`r #moved to index page`
+
 So you may be wondering... why were we interested in this topic?
 
 ## Do the Rats Run This City? 
