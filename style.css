@@ -2,18 +2,17 @@
 
 /* LARGE HERO IMAGE AT TOP OF PAGE*/
 
-.hero-image {
+/*.hero-image {
     position: relative;
     margin-bottom: 2em;
     background-image: url(pics/rat-bg.png); 
-    height: 1200px;
-    background-size: cover;
+    max-width:100%;
+    height:auto;
     background-color: #141c25f2;
     background-position: center center;
-    display: flex; /* Change to `display: none` for no hero image */
-    justify-content: center;
-    align-items: center;
-}
+    display: none; /* Change to `display: none` for no hero image */
+   /* justify-content: center;
+    align-items: center;}*/
 
 /*-----------------TOC----------------*/
 
@@ -22,13 +21,6 @@
 .row-fluid{
   display: flex; 
 
-}
-
-.tocify {
-  position: -webkit-sticky;
-  position: sticky; 
-  top: 120px; /*Controls where TOC stops when sticky */
-  width: 100% !important;
 }
 
 .list-group-item {

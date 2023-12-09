@@ -7,7 +7,7 @@ output:
     code_folding: show
 ---
 
-This is where the data cleaning/tidying goes.
+This page describes the data cleaning and tidying process, complete with code. Through this process, we found that some datasets were more difficult to wrangle because of their source or variable types. Thus, `dplyr` functions were used creatively to tidy data and resolve issues with merging.
 
 ```{r, echo=FALSE, message=FALSE, include=FALSE}
 library(tidyverse)
@@ -20,6 +20,7 @@ library(choroplethrMaps)
 ```
 
 ## Rat Sightings Dataset
+The initial rat sightings dataset had 28 variables and 160561 observations.
 ```{r rat sightings, warning = FALSE, message = FALSE}
 sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
   janitor::clean_names() |>
@@ -32,17 +33,12 @@ sightings = read_csv('data/NYC_Rat_Sightings.csv') |>
          !incident_zip <= 10000,
          !incident_zip > 11697,
          !borough %in% c("Unspecified", NA)) |>
-  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) |> 
-  select(unique_key, date, year, month, day, everything()) |>
-  mutate_all(tolower) |>
-  mutate(across(where(is.character), trimws)) |> 
-  group_by(year, month, borough) |> 
-  summarize(ratcount = n()) 
+  select(-agency, -agency_name, -complaint_type, -descriptor, -landmark, -facility_type, -park_facility_name, -vehicle_type, -taxi_company_borough, -taxi_pick_up_location, -bridge_highway_name, -road_ramp, -bridge_highway_segment, -bridge_highway_direction) 
 ```
 
 ## Weather Dataset
+The weather dataset had 6 variables and 2557 observations. 
 ```{r weather import, warning = FALSE, message = FALSE}
-# maybe describe some changes our team members made to rat sightings data to join it with other data
 weather_df = rnoaa::meteo_pull_monitors(
     c("USW00094728"),
     var = c("PRCP", "TMIN", "TMAX"), 
@@ -55,9 +51,17 @@ weather_df = rnoaa::meteo_pull_monitors(
   select(name, id, everything())
 ```
 
+To join it with the rat sightings data, changes to the `date` variables were made.
+```{r join weather, warning=FALSE, message=FALSE}
+sightings$date <- as.Date(as.character(sightings$date), format = "%Y%m%d")
+
+rat_weather =
+  right_join(sightings, weather_df, by="date")
+```
+
 ## Trash Dataset
-```{r waste data, warning = FALSE, message = FALSE}
-#load and clean waste data
+The waste dataset had 6 variables and 475 observations. 
+```{r waste 1, warning = FALSE, message = FALSE}
 waste <-
   read.csv("data/DSNY_Monthly_Tonnage_Data_20231202.csv") |> 
   janitor::clean_names() |> 
@@ -69,19 +73,32 @@ waste <-
     total_paper = sum(papertonscollected, na.rm = TRUE),
     total_mgp = sum(mgptonscollected, na.rm = TRUE))  |> 
   mutate_all(tolower) |> 
-  mutate(across(where(is.character), trimws)) 
+  mutate(across(where(is.character), trimws))
+```
 
-#waste data - pivoted longer
+After grouping, a new dataset waste_2 was made with 5 variables and 1425 observations.
+
+```{r waste 2, warning = FALSE, message = FALSE}
 waste_2 = waste |> 
    pivot_longer(
     total_refuse:total_mgp, 
     names_to = "type",
     values_to = "tons") |> 
   mutate(type = substr(type, 7, 12),
-         tons = as.numeric(tons)) |> 
+         tons = as.numeric(tons)) |>
   group_by(year, month, borough, type, tons)
+```
 
-#merge datasets
+To join waste_2 with rat sightings, some changes were made. The final merged dataset had 7 variables and 1410 observations, and a summary dataset of merged tons of trash had 6 variables with 470 observations. 
+
+```{r waste merge, warning = FALSE, message = FALSE}
+sightings = sightings |>
+  select(unique_key, date, year, month, day, everything()) |> 
+  mutate_all(tolower) |>
+  mutate(across(where(is.character), trimws)) |> 
+  group_by(year, month, borough) |> 
+  summarize(ratcount = n()) 
+
 merged = inner_join(waste_2, sightings, 
             by = c("year", "month", "borough")) |> 
   mutate(tons = as.numeric(tons)) |> 
@@ -97,20 +114,232 @@ merged_tons = merged |>
     combined_ym = ym(combined_ym) )
 ```
 
-## Restaurant Datset
+## Restaurant Dataset
+The restaurant inspections dataset had 28 variables and 207036 variables.
 
 ```{r inspections_df, warning = FALSE, message = FALSE}
-#Importing NYC Restaurant Inspections csv
+
 inspections_df = read_csv("./data/NYC_Restaurant_Inspections.csv") |>
   janitor::clean_names() |>
   separate(inspection_date, c("Month", "Day", "Year"), sep = "/") |>
-  select(-Day) |> #can remove other columns as needed
+  select(-Day) |> 
   filter(as.numeric(Year) > 2015)
 ```
 
-## Socioeconomic Factors Dataset
+## Socioeconomic Factors Datasets
+The data in this section required more wrangling methods, as the original data sources were bulky. The process included re-categorizing variables, filtering to NYC counties, and joining datasets by year using the variable `geo_id`. 
 
-*ONLY POVERTY ATM, DID NOT INCLUDE CROWDING OR EDUCATION*
+The crowding data began with 4 separate datasets (data by year) that were joined. The final dataset had 32 variables and 1979 observations.
+```{r crowding, warning = FALSE, message = FALSE}
+crowding18 =
+  read_csv("data/crowding/2018_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y18   = s2501_c01_006e,
+    bet_1to1.5_y18    = s2501_c01_007e,
+    more_than_1.5_y18 = s2501_c01_008e,
+    total_homes_y18   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y18","bet_1to1.5_y18","more_than_1.5_y18", "total_homes_y18"), as.numeric) |> 
+  mutate(
+    less_prop_y18  = less_than_1_y18/total_homes_y18,
+    bet_prop_y18  = bet_1to1.5_y18/total_homes_y18,
+    more_prop_y18 = more_than_1.5_y18/total_homes_y18,
+  )
+
+crowding19 =
+  read_csv("data/crowding/2019_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y19   = s2501_c01_006e,
+    bet_1to1.5_y19    = s2501_c01_007e,
+    more_than_1.5_y19 = s2501_c01_008e,
+    total_homes_y19   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y19","bet_1to1.5_y19","more_than_1.5_y19", "total_homes_y19"), as.numeric) |> 
+  mutate(
+    less_prop_y19  = less_than_1_y19/total_homes_y19,
+    bet_prop_y19  = bet_1to1.5_y19/total_homes_y19,
+    more_prop_y19 = more_than_1.5_y19/total_homes_y19,
+  )
+
+crowding20 =
+  read_csv("data/crowding/2020_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y20   = s2501_c01_006e,
+    bet_1to1.5_y20    = s2501_c01_007e,
+    more_than_1.5_y20 = s2501_c01_008e,
+    total_homes_y20   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y20","bet_1to1.5_y20","more_than_1.5_y20", "total_homes_y20"), as.numeric) |> 
+  mutate(
+    less_prop_y20  = less_than_1_y20/total_homes_y20,
+    bet_prop_y20  = bet_1to1.5_y20/total_homes_y20,
+    more_prop_y20 = more_than_1.5_y20/total_homes_y20,
+  )
+  
+crowding21 =
+  read_csv("data/crowding/2021_crowding.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s2501_c01_006e, s2501_c01_007e, s2501_c01_008e, s2501_c01_001e) |> 
+  rename(
+    less_than_1_y21   = s2501_c01_006e,
+    bet_1to1.5_y21    = s2501_c01_007e,
+    more_than_1.5_y21 = s2501_c01_008e,
+    total_homes_y21   = s2501_c01_001e,
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_than_1_y21","bet_1to1.5_y21","more_than_1.5_y21", "total_homes_y21"), as.numeric) |> 
+  mutate(
+    less_prop_y21  = less_than_1_y21/total_homes_y21,
+    bet_prop_y21  = bet_1to1.5_y21/total_homes_y21,
+    more_prop_y21 = more_than_1.5_y21/total_homes_y21,
+  )
+
+crowding_10s = 
+  full_join(crowding18, crowding19, by = "geo_id")
+
+crowding_20s = 
+  full_join(crowding20, crowding21, by = "geo_id")
+
+crowding_all =
+  full_join(crowding_10s, crowding_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+The other socioeconomic factors had similar data cleaning processes. The final dataset had 44 variables and 1986 variables.
+```{r educ, warning=FALSE, message=FALSE}
+edu18 =
+  read_csv("data/edu/edu_2018.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y18        = s1501_c01_007e,
+    no_hs_diploma_y18 = s1501_c01_008e,
+    hs_grad_y18       = s1501_c01_009e,
+    some_college_y18  = s1501_c01_010e,
+    associate_y18     = s1501_c01_011e,
+    bachelor_y18      = s1501_c01_012e,
+    graduate_y18      = s1501_c01_013e,
+    total_pop_y18     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y18","no_hs_diploma_y18","hs_grad_y18","some_college_y18","associate_y18",
+              "bachelor_y18","graduate_y18", "total_pop_y18"), as.numeric) |> 
+  mutate(
+    hs_or_less_y18 = (rowSums(across(c(less_9_y18,no_hs_diploma_y18,hs_grad_y18))))/total_pop_y18,
+    college_y18    = (rowSums(across(c(some_college_y18,associate_y18,bachelor_y18,graduate_y18))))/total_pop_y18
+  )
+
+edu19 =
+  read_csv("data/edu/edu_2019.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y19        = s1501_c01_007e,
+    no_hs_diploma_y19 = s1501_c01_008e,
+    hs_grad_y19       = s1501_c01_009e,
+    some_college_y19  = s1501_c01_010e,
+    associate_y19     = s1501_c01_011e,
+    bachelor_y19      = s1501_c01_012e,
+    graduate_y19      = s1501_c01_013e,
+    total_pop_y19     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y19","no_hs_diploma_y19","hs_grad_y19","some_college_y19","associate_y19",
+              "bachelor_y19","graduate_y19", "total_pop_y19"), as.numeric) |> 
+  mutate(
+    hs_or_less_y19 = (rowSums(across(c(less_9_y19,no_hs_diploma_y19,hs_grad_y19))))/total_pop_y19,
+    college_y19    = (rowSums(across(c(some_college_y19,associate_y19,bachelor_y19,graduate_y19))))/total_pop_y19
+  )
+
+edu20 =
+  read_csv("data/edu/edu_2020.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y20        = s1501_c01_007e,
+    no_hs_diploma_y20 = s1501_c01_008e,
+    hs_grad_y20       = s1501_c01_009e,
+    some_college_y20  = s1501_c01_010e,
+    associate_y20     = s1501_c01_011e,
+    bachelor_y20      = s1501_c01_012e,
+    graduate_y20      = s1501_c01_013e,
+    total_pop_y20     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y20","no_hs_diploma_y20","hs_grad_y20","some_college_y20","associate_y20",
+              "bachelor_y20","graduate_y20", "total_pop_y20"), as.numeric) |> 
+  mutate(
+    hs_or_less_y20 = (rowSums(across(c(less_9_y20,no_hs_diploma_y20,hs_grad_y20))))/total_pop_y20,
+    college_y20    = (rowSums(across(c(some_college_y20,associate_y20,bachelor_y20,graduate_y20))))/total_pop_y20
+  )
+
+edu21 =
+  read_csv("data/edu/edu_2021.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, s1501_c01_007e, s1501_c01_008e, s1501_c01_009e, s1501_c01_010e, s1501_c01_011e, 
+         s1501_c01_012e, s1501_c01_013e, s1501_c01_006e) |> 
+  rename(
+    less_9_y21        = s1501_c01_007e,
+    no_hs_diploma_y21 = s1501_c01_008e,
+    hs_grad_y21       = s1501_c01_009e,
+    some_college_y21  = s1501_c01_010e,
+    associate_y21     = s1501_c01_011e,
+    bachelor_y21      = s1501_c01_012e,
+    graduate_y21      = s1501_c01_013e,
+    total_pop_y21     = s1501_c01_006e
+  ) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("less_9_y21","no_hs_diploma_y21","hs_grad_y21","some_college_y21","associate_y21",
+              "bachelor_y21","graduate_y21", "total_pop_y21"), as.numeric) |> 
+  mutate(
+    hs_or_less_y21 = (rowSums(across(c(less_9_y21,no_hs_diploma_y21,hs_grad_y21))))/total_pop_y21,
+    college_y21    = (rowSums(across(c(some_college_y21,associate_y21,bachelor_y21,graduate_y21))))/total_pop_y21
+  )
+
+edu_10s = 
+  full_join(edu18, edu19, by = "geo_id")
+
+edu_20s = 
+  full_join(edu20, edu21, by = "geo_id")
+
+edu_all =
+  full_join(edu_10s, edu_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate(
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+  ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
+
+The final dataset for poverty had 12 variables and 1984 observations.
 
 ```{r poverty, warning = FALSE, message = FALSE}
 poverty18 =
@@ -174,4 +403,70 @@ poverty_all =
                        " New York County"))
 ```
 
+Finally, the dataset on vacancy had 16 variables and 1886 observations.
+```{r vacancy, warning=FALSE, message=FALSE}
+vacancy18 =
+  read_csv("data/vacancy/2018_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, name, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y18 = b25004_001e,
+    vacant_y18     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y18","vacant_y18"), as.numeric) |> 
+  mutate(prop_vacant_y18 = vacant_y18/total_home_y18)
+
+vacancy19 =
+  read_csv("data/vacancy/2019_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y19 = b25004_001e,
+    vacant_y19     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y19","vacant_y19"), as.numeric) |> 
+  mutate(prop_vacant_y19 = vacant_y19/total_home_y19)
+
+vacancy20 =
+  read_csv("data/vacancy/2020_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y20 = b25004_001e,
+    vacant_y20     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |> 
+  mutate_at(c("total_home_y20","vacant_y20"), as.numeric) |> 
+  mutate(prop_vacant_y20 = vacant_y20/total_home_y20)
+  
+vacancy21 =
+  read_csv("data/vacancy/2021_vacancy.csv", col_names = TRUE) |> 
+  janitor::clean_names() |> 
+  select(geo_id, b25004_001e, b25004_008e) |> 
+  rename(
+    total_home_y21 = b25004_001e,
+    vacant_y21     = b25004_008e) |> 
+  drop_na() |> 
+  filter(!row_number() %in% c(1)) |>  
+  mutate_at(c("total_home_y21","vacant_y21"), as.numeric) |> 
+  mutate(prop_vacant_y21 = vacant_y21/total_home_y21)
+
+vacancy_10s = 
+  full_join(vacancy18, vacancy19, by = "geo_id")
+
+vacancy_20s = 
+  full_join(vacancy20, vacancy21, by = "geo_id")
+
+vacancy_all =
+  full_join(vacancy_10s, vacancy_20s, by = "geo_id") |> 
+  drop_na() |> 
+  mutate( 
+    id = str_sub(geo_id, 10),
+    county = str_extract(name, "(?<=,)[^,]+(?=,)")
+    ) |> 
+  filter(county %in% c(" Kings County"," Bronx County"," Queens County"," Richmond County",
+                       " New York County"))
+```
 

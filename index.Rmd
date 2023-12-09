@@ -6,11 +6,13 @@ output:
     toc_float: true
     theme: yeti
     always_allow_html: true
-    includes:
-      in_header: hero-image.html 
+    #includes:
+     # in_header: hero-image.html 
 ---
 
 Welcome to our final project for Fall 2023's P8105 class! This project will take you through recent NYC data on rats and more- maybe you will learn something to avoid these furry foes.
+
+<img src="pics/rat-bg.png" style="max-width:100% height:auto">
 
 ## Welcome!
 
@@ -51,6 +53,7 @@ they said, along with graphic illustrations of rats posted on trash cans around 
 ## More to explore
 Here are some links we perused while brainstorming for our project.
 
+* [How Rats Took Over New York](https://youtu.be/cosTXRzBb0E)
 * [Pizza rat](https://www.theguardian.com/world/video/2015/sep/21/pizza-rat-new-york-subway-video)
 * [Buddy the Rat](https://untappedcities.com/2023/08/03/buddy-the-rat-tiktok/)
 * [Uptown Rat](https://www.tiktok.com/@justasmallbird/video/7304051573041188127?_r=1&_t=8huZVoS7dOt)
