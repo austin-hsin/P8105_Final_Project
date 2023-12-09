@@ -31,3 +31,70 @@
   top: 120px; /*Controls where TOC stops when sticky */
   width: 100% !important;
 }
+
+.list-group-item {
+    color: #7b8a8b;
+    font-size: 18px;
+}
+
+.list-group-item.active {
+    color: #654321;
+    background-color: orange;
+}
+
+.list-group-item:hover, 
+.list-group-item.active:hover {
+    color: #362617;
+    background-color: orange;
+}
+
+/*-----------------fonts----------------*/
+
+@import url('https://fonts.googleapis.com/css2?family=Kalnia:wght@300&display=swap');
+
+body {
+    font-family: 'Kalnia', serif;
+    font-size: 20px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500&display=swap');
+
+.title {
+    font-family: 'Cinzel', serif;
+}
+
+h2 {
+    font-family: 'Cinzel', serif;
+}
+
+
+/*----------------NAVBAR ---------------*/
+.navbar-default {
+    background-color: #1c140c;
+}
+
+.navbar-default .navbar-nav>.open>a, 
+.navbar-default .navbar-nav>.active>a, 
+a.dropdown-toggle:hover {
+  background-color: #362617 !important;
+}
+
+/* Dropdown menu color */
+.navbar-default .dropdown-menu {
+  background-color: #362617;
+}
+
+/* Dropdown menu hover color */
+  .navbar-default .dropdown-menu>li>a:hover {
+    background-color: #ab6a2c;
+  }
+
+/* Navbar Links when hovered*/
+.navbar-default .dropdown-menu>.active>a
+.navbar-default .navbar-nav>.active>a:hover, 
+.navbar-default .navbar-nav:hover, 
+.navbar-default .navbar-nav>li>a:hover, 
+a.navbar-brand:hover {
+  color: #eda155 !important;
+  background-color: #362617;
+}

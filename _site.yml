@@ -40,4 +40,4 @@ output:
     theme: yeti
     always_allow_html: true
     includes: 
-      in_header:favicon.html
+      in_header: favicon.html
